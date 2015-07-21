@@ -75,9 +75,22 @@ class TestQfs < Minitest::Test
     assert_equal(0, @client.remove(@file, true))
   end
 
+  def test_directory?
+    @client.mkdir(@file)
+    assert @client.directory?(@file)
+    @client.rmdir(@file)
+
+    @client.open(@file, 'w') { |f| f.write('') }
+    assert !@client.directory?(@file)
+    @client.remove(@file)
+
+    assert !@client.directory?(@file)
+  end
+
   def teardown
     if @client.exists?(@file)
       @client.remove(@file) if @client.file?(@file)
+      @client.rmdir(@file) if @client.directory?(@file)
     end
     @client.release
   end

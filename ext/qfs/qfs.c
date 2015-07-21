@@ -257,6 +257,15 @@ static VALUE qfs_client_isfile(VALUE self, VALUE path) {
 	return INT2BOOL(isfile);
 }
 
+static VALUE qfs_client_isdirectory(VALUE self, VALUE path) {
+	Check_Type(path, T_STRING);
+	char *p = StringValueCStr(path);
+	struct qfs_client *client;
+	Data_Get_Struct(self, struct qfs_client, client);
+	bool isfile = qfs_isdirectory(client->qfs, p);
+	return INT2BOOL(isfile);
+}
+
 static VALUE qfs_client_remove(VALUE self, VALUE path) {
 	Check_Type(path, T_STRING);
 	char *p = StringValueCStr(path);
@@ -334,6 +343,7 @@ void Init_qfs() {
 	rb_define_method(cQfsBaseClient, "exists", qfs_client_exists, 1);
 	rb_define_method(cQfsBaseClient, "remove", qfs_client_remove, 1);
 	rb_define_method(cQfsBaseClient, "isfile", qfs_client_isfile, 1);
+	rb_define_method(cQfsBaseClient, "isdirectory", qfs_client_isdirectory, 1);
 	rb_define_method(cQfsBaseClient, "mkdir", qfs_client_mkdir, 2);
 	rb_define_method(cQfsBaseClient, "rmdir", qfs_client_rmdir, 1);
 

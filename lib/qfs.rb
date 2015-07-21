@@ -62,6 +62,8 @@ module Qfs
 
     alias file? isfile
 
+    alias directory? isdirectory
+
     ##
     # Remove a regular file.  Pass 'true' to stop exceptions from
     # being thrown if the file doesn't exist.
