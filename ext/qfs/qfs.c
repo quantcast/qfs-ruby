@@ -6,7 +6,7 @@ VALUE mQfs;
 VALUE eQfsError;
 VALUE cQfsFile;
 VALUE cQfsAttr;
-VALUE cQfsClient;
+VALUE cQfsBaseClient;
 
 #define QFS_NIL_FD -1
 
@@ -68,6 +68,7 @@ static VALUE qfs_file_read(VALUE self, VALUE len) {
 	size_t n = NUM2INT(len);
 	VALUE s = rb_str_buf_new(n);
 	ssize_t n_read = qfs_read(client->qfs, file->fd, RSTRING_PTR(s), n);
+	fprintf(stderr, "read %ld\n", n_read);
 	QFS_CHECK_ERR(n_read);
 	rb_str_set_len(s, n_read);
 	return s;
@@ -79,8 +80,8 @@ static VALUE qfs_file_write(VALUE self, VALUE str) {
 	Check_Type(str, T_STRING);
 	Data_Get_Struct(self, struct qfs_file, file);
 	Data_Get_Struct(file->client, struct qfs_client, client);
-	fprintf(stderr, "%s %ld\n", RSTRING_PTR(str), RSTRING_LEN(str));
-	ssize_t n = qfs_write(client->qfs, file->fd, RSTRING_PTR(str), RSTRING_LEN(str));
+	ssize_t n = qfs_write(client->qfs, file->fd, RSTRING_PTR(str),
+			RSTRING_LEN(str));
 	QFS_CHECK_ERR(n);
 	if (n < RSTRING_LEN(str)) {
 		WARN("partial write");
@@ -228,6 +229,49 @@ static VALUE qfs_client_readdir(VALUE self, VALUE path) {
 	return INT2FIX(count);
 }
 
+static VALUE qfs_client_exists(VALUE self, VALUE path) {
+	Check_Type(path, T_STRING);
+	char *p = StringValueCStr(path);
+	struct qfs_client *client;
+	Data_Get_Struct(self, struct qfs_client, client);
+	bool exists = qfs_exists(client->qfs, p);
+	return INT2BOOL(exists);
+}
+
+static VALUE qfs_client_isfile(VALUE self, VALUE path) {
+	Check_Type(path, T_STRING);
+	char *p = StringValueCStr(path);
+	struct qfs_client *client;
+	Data_Get_Struct(self, struct qfs_client, client);
+	bool isfile = qfs_isfile(client->qfs, p);
+	return INT2BOOL(isfile);
+}
+
+static VALUE qfs_client_remove(VALUE self, VALUE path) {
+	Check_Type(path, T_STRING);
+	char *p = StringValueCStr(path);
+
+	// Check that the file exists
+	VALUE exists = qfs_client_exists(self, path);
+	if (!RTEST(exists)) {
+		rb_raise(eQfsError, "Can't remove %s.  It doesnt exist",
+			p);
+	}
+
+	// Check that the file is regular
+	VALUE isfile = qfs_client_isfile(self, path);
+	if (!RTEST(isfile)) {
+		rb_raise(eQfsError, "Can't remove %s. It isnt a regular file",
+			p);
+	}
+
+	struct qfs_client *client;
+	Data_Get_Struct(self, struct qfs_client, client);
+	int res = qfs_remove(client->qfs, p);
+	QFS_CHECK_ERR(res);
+	return INT2NUM(1);
+}
+
 void Init_qfs() {
 	mQfs = rb_define_module("Qfs");
 
@@ -235,12 +279,15 @@ void Init_qfs() {
 		trace = 1;
 	}
 
-	cQfsClient = rb_define_class_under(mQfs, "Client", rb_cObject);
-	rb_define_alloc_func(cQfsClient, qfs_client_allocate);
-	rb_define_method(cQfsClient, "initialize", qfs_client_connect, 2);
-	rb_define_method(cQfsClient, "release", qfs_client_release, 0);
-	rb_define_method(cQfsClient, "open", qfs_client_open, -1);
-	rb_define_method(cQfsClient, "readdir", qfs_client_readdir, 1);
+	cQfsBaseClient = rb_define_class_under(mQfs, "BaseClient", rb_cObject);
+	rb_define_alloc_func(cQfsBaseClient, qfs_client_allocate);
+	rb_define_method(cQfsBaseClient, "initialize", qfs_client_connect, 2);
+	rb_define_method(cQfsBaseClient, "release", qfs_client_release, 0);
+	rb_define_method(cQfsBaseClient, "open", qfs_client_open, -1);
+	rb_define_method(cQfsBaseClient, "readdir", qfs_client_readdir, 1);
+	rb_define_method(cQfsBaseClient, "exists", qfs_client_exists, 1);
+	rb_define_method(cQfsBaseClient, "remove", qfs_client_remove, 1);
+	rb_define_method(cQfsBaseClient, "isfile", qfs_client_isfile, 1);
 
 	cQfsFile = rb_define_class_under(mQfs, "File", rb_cObject);
 	rb_define_alloc_func(cQfsFile, qfs_file_allocate);

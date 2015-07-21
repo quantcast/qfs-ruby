@@ -2,8 +2,9 @@ require 'qfs/version'
 require 'qfs.bundle'
 require 'fcntl'
 
+##
+# Container module for QFS classes
 module Qfs
-
   # supported oflags
   O_CREAT = Fcntl::O_CREAT
   O_EXCL = Fcntl::O_EXCL
@@ -13,17 +14,76 @@ module Qfs
   O_TRUNC = Fcntl::O_TRUNC
   O_APPEND = Fcntl::O_APPEND
 
-  class Client
-    def with_file path, oflag=nil, mode=nil, params=nil
-      f = self.open path, oflag, mode, params
-      begin
-        yield f
-      ensure
-        f.close
+  ##
+  # A higher-level Client to interact with QFS.  This attempts to use
+  # a similar interface to ruby's native IO functionality.
+  class Client < BaseClient
+    ##
+    # Open a file on QFS.  This method uses a very similar interface to the
+    # 'open' method standard in ruby.
+    #
+    # #### Modes
+    #   * 'r': Read only
+    #   * 'r+': Read and write
+    #   * 'w': Write only, overwrite or create new file
+    #   * 'w+': Read and write, overwrite or create new file
+    #   * 'a': Write only, append to file or create.
+    #   * 'a+': Read or write, append to file on writes or create
+    #
+    # #### Options
+    #   * flags: Alternative place to pass the mode strings above
+    #   * mode:
+    #   * params:
+    def open(path, mode_str, options = {})
+      flags = options[:flags]
+      flags ||= mode_to_flags(mode_str)
+      fail "#{mode_str} is not a valid mode string" if flags.nil?
+
+      mode ||= options[:mode]
+      params ||= options[:params]
+      puts "#{mode_str} == #{flags}"
+      f = super(path, flags, mode, params)
+
+      if block_given?
+        begin
+          yield f
+        ensure
+          f.close
+        end
+      else
+        return f
       end
     end
+
+    ##
+    # Check if the specified (absolute) path exists.
+    def exists?(path)
+      exists(path)
+    end
+
+    private
+
+    ##
+    # Maps mode strings to oflags
+    MODE_STR_TO_FLAGS = {
+      'r' => Qfs::O_RDONLY,
+      'r+' => Qfs::O_RDWR,
+      'w' => Qfs::O_WRONLY | Qfs::O_TRUNC | Qfs::O_CREAT,
+      'w+' => Qfs::O_RDWR | Qfs::O_CREAT,
+      'a' => Qfs::O_WRONLY | Qfs::O_APPEND | Qfs::O_CREAT,
+      'a+' => Qfs::O_RDWR | Qfs::O_APPEND | Qfs::O_CREAT,
+    }
+
+    ##
+    # Convert the mode strings to oflags
+    def mode_to_flags(mode)
+      MODE_STR_TO_FLAGS[mode]
+    end
+  end
+
+  class BaseClient
     def self.with_client host, port
-      c = Client.new host, port
+      c = self.new host, port
       begin
         yield c
       ensure
