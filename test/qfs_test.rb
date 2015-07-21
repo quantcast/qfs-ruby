@@ -31,6 +31,14 @@ class TestQfs < Minitest::Test
   end
 
   def test_tell
+    data = random_data
+    @client.open(@file, 'w+') do |f|
+      f.write(data)
+      assert_equal(data.length, f.tell())
+    end
+    @client.open(@file, 'w+') do |f|
+      assert_equal(0, f.tell())
+    end
   end
 
   def test_remove
