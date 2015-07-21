@@ -73,6 +73,16 @@ static VALUE qfs_file_read(VALUE self, VALUE len) {
 	return s;
 }
 
+static VALUE qfs_file_tell(VALUE self) {
+	struct qfs_file *file;
+	struct qfs_client *client;
+	Data_Get_Struct(self, struct qfs_file, file);
+	Data_Get_Struct(file->client, struct qfs_client, client);
+	off_t offset = qfs_tell(client->qfs, file->fd);
+	QFS_CHECK_ERR(offset);
+	return INT2FIX(offset);
+}
+
 static VALUE qfs_file_write(VALUE self, VALUE str) {
 	struct qfs_file *file;
 	struct qfs_client *client;
@@ -291,6 +301,7 @@ void Init_qfs() {
 	cQfsFile = rb_define_class_under(mQfs, "File", rb_cObject);
 	rb_define_alloc_func(cQfsFile, qfs_file_allocate);
 	rb_define_method(cQfsFile, "read", qfs_file_read, 1);
+	rb_define_method(cQfsFile, "tell", qfs_file_tell, 0);
 	rb_define_method(cQfsFile, "write", qfs_file_write, 1);
 	rb_define_method(cQfsFile, "close", qfs_file_close, 0);
 
