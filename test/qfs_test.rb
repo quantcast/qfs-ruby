@@ -19,6 +19,8 @@ class TestQfs < Minitest::Test
     data = random_data
     @client.open(file, 'w+') do |f|
       f.write(data)
+    end
+    @client.open(file, 'w+') do |f|
       assert_equal(data, f.read(data.length))
     end
   end

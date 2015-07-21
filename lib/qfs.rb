@@ -41,7 +41,6 @@ module Qfs
 
       mode ||= options[:mode]
       params ||= options[:params]
-      puts "#{mode_str} == #{flags}"
       f = super(path, flags, mode, params)
 
       if block_given?

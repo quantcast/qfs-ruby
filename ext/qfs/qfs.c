@@ -68,7 +68,6 @@ static VALUE qfs_file_read(VALUE self, VALUE len) {
 	size_t n = NUM2INT(len);
 	VALUE s = rb_str_buf_new(n);
 	ssize_t n_read = qfs_read(client->qfs, file->fd, RSTRING_PTR(s), n);
-	fprintf(stderr, "read %ld\n", n_read);
 	QFS_CHECK_ERR(n_read);
 	rb_str_set_len(s, n_read);
 	return s;
