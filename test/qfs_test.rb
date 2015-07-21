@@ -50,6 +50,7 @@ class TestQfs < Minitest::Test
     assert_equal(1, res)
 
     assert_raises(Qfs::Error) { @client.remove(@file) }
+    assert_equal(0, @client.remove(@file, true))
   end
 
   def test_exists
@@ -62,8 +63,22 @@ class TestQfs < Minitest::Test
     assert !@client.exists?(@file)
   end
 
+  def test_mkdir_rmdir
+    assert @client.mkdir(@file)
+    assert @client.exists?(@file)
+
+    assert_raises(Qfs::Error) { @client.mkdir(@file) }
+    assert @client.rmdir(@file)
+    assert !@client.exists?(@file)
+
+    assert_raises(Qfs::Error) { @client.rmdir(@file) }
+    assert_equal(0, @client.remove(@file, true))
+  end
+
   def teardown
-    @client.remove(@file) if @client.exists?(@file)
+    if @client.exists?(@file)
+      @client.remove(@file) if @client.file?(@file)
+    end
     @client.release
   end
 end

@@ -60,7 +60,40 @@ module Qfs
       exists(path)
     end
 
+    alias file? isfile
+
+    ##
+    # Remove a regular file.  Pass 'true' to stop exceptions from
+    # being thrown if the file doesn't exist.
+    def remove(path, force = false)
+      force_remove(force) { super(path) }
+    end
+
+    ##
+    # Create a directory
+    def mkdir(path, mode=600)
+      super(path, mode)
+    end
+
+    ##
+    # Remove a directory
+    def rmdir(path, force = false)
+      force_remove(force) { super(path) }
+    end
+
     private
+
+    ##
+    # If force is true, call the block and just return zero if it
+    # throws an exception
+    def force_remove(force)
+      return yield unless force
+      begin
+        return yield
+      rescue Qfs::Error
+        return 0
+      end
+    end
 
     ##
     # Maps mode strings to oflags

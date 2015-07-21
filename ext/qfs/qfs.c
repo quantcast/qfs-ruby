@@ -36,6 +36,7 @@ struct qfs_file {
 
 #define NTIME(x) rb_time_new(x.tv_sec, x.tv_usec)
 #define INT2BOOL(x) (x?Qtrue:Qfalse)
+#define RES2BOOL(x) (x>=0 ? Qtrue : Qfalse)
 
 QFS_ATTR_GET(filename, rb_str_new2)
 QFS_ATTR_GET(id, INT2FIX)
@@ -281,6 +282,42 @@ static VALUE qfs_client_remove(VALUE self, VALUE path) {
 	return INT2NUM(1);
 }
 
+static VALUE qfs_client_mkdir(VALUE self, VALUE path, VALUE mode) {
+	Check_Type(path, T_STRING);
+	char *p = StringValueCStr(path);
+
+	// Check if the directory already exists
+	if (RTEST(qfs_client_exists(self, path))) {
+		rb_raise(eQfsError, "Can't create directory %s. It already exists",
+				p);
+	}
+
+	struct qfs_client *client;
+	Data_Get_Struct(self, struct qfs_client, client);
+	Check_Type(mode, T_FIXNUM);
+	uint16_t imode = FIX2INT(mode);
+	int res = qfs_mkdir(client->qfs, p, imode);
+	QFS_CHECK_ERR(res);
+	return RES2BOOL(res);
+}
+
+static VALUE qfs_client_rmdir(VALUE self, VALUE path) {
+	Check_Type(path, T_STRING);
+	char *p = StringValueCStr(path);
+
+	// Check if the directory doesnt exist
+	if (!RTEST(qfs_client_exists(self, path))) {
+		rb_raise(eQfsError, "Can't delete directory %s. It doesnt exist",
+				p);
+	}
+
+	struct qfs_client *client;
+	Data_Get_Struct(self, struct qfs_client, client);
+	int res = qfs_rmdir(client->qfs, p);
+	QFS_CHECK_ERR(res);
+	return RES2BOOL(res);
+}
+
 void Init_qfs() {
 	mQfs = rb_define_module("Qfs");
 
@@ -297,6 +334,8 @@ void Init_qfs() {
 	rb_define_method(cQfsBaseClient, "exists", qfs_client_exists, 1);
 	rb_define_method(cQfsBaseClient, "remove", qfs_client_remove, 1);
 	rb_define_method(cQfsBaseClient, "isfile", qfs_client_isfile, 1);
+	rb_define_method(cQfsBaseClient, "mkdir", qfs_client_mkdir, 2);
+	rb_define_method(cQfsBaseClient, "rmdir", qfs_client_rmdir, 1);
 
 	cQfsFile = rb_define_class_under(mQfs, "File", rb_cObject);
 	rb_define_alloc_func(cQfsFile, qfs_file_allocate);
