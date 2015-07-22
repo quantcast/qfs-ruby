@@ -12,6 +12,14 @@ class TestQfs < Minitest::Test
     @file = get_test_path(@test_name)
   end
 
+  def teardown
+    if @client.exists?(@file)
+      @client.remove(@file) if @client.file?(@file)
+      @client.rmdir(@file) if @client.directory?(@file)
+    end
+    @client.release
+  end
+
   def get_test_path(p)
     File.join('/user/ngoldman/test', p)
   end
@@ -22,7 +30,7 @@ class TestQfs < Minitest::Test
 
   def test_open
     data = random_data
-    @client.open(@file, 'w+') do |f|
+    @client.open(@file, 'w') do |f|
       f.write(data)
     end
     @client.open(@file, 'r') do |f|
@@ -32,11 +40,11 @@ class TestQfs < Minitest::Test
 
   def test_tell
     data = random_data
-    @client.open(@file, 'w+') do |f|
+    @client.open(@file, 'w') do |f|
       f.write(data)
       assert_equal(data.length, f.tell())
     end
-    @client.open(@file, 'w+') do |f|
+    @client.open(@file, 'w') do |f|
       assert_equal(0, f.tell())
     end
   end
@@ -112,11 +120,23 @@ class TestQfs < Minitest::Test
     end
   end
 
-  def teardown
-    if @client.exists?(@file)
-      @client.remove(@file) if @client.file?(@file)
-      @client.rmdir(@file) if @client.directory?(@file)
+  def test_read_all
+    data = random_data(rand(1000))
+    @client.open(@file, 'w') { |f| f.write(data) }
+    @client.open(@file, 'r') do |f|
+      len = rand(data.length)
+      assert_equal(data[0..(len-1)], f.read(len))
     end
-    @client.release
+    @client.open(@file, 'r') do |f|
+      assert_equal(data, f.read)
+    end
+  end
+
+  def test_read_client
+    data = random_data(rand(1000))
+    len = rand(data.length)
+    @client.open(@file, 'w') { |f| f.write(data) }
+    assert_equal(data[0..(len-1)], @client.read(@file, len))
+    assert_equal(data, @client.read(@file))
   end
 end

@@ -372,7 +372,7 @@ void Init_qfs() {
 
 	cQfsFile = rb_define_class_under(mQfs, "File", rb_cObject);
 	rb_define_alloc_func(cQfsFile, qfs_file_allocate);
-	rb_define_method(cQfsFile, "read", qfs_file_read, 1);
+	rb_define_method(cQfsFile, "read_len", qfs_file_read, 1);
 	rb_define_method(cQfsFile, "tell", qfs_file_tell, 0);
 	rb_define_method(cQfsFile, "stat", qfs_file_stat, 0);
 	rb_define_method(cQfsFile, "write", qfs_file_write, 1);

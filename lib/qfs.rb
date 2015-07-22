@@ -24,11 +24,8 @@ module Qfs
     #
     # #### Modes
     #   * 'r': Read only
-    #   * 'r+': Read and write
     #   * 'w': Write only, overwrite or create new file
-    #   * 'w+': Read and write, overwrite or create new file
     #   * 'a': Write only, append to file or create.
-    #   * 'a+': Read or write, append to file on writes or create
     #
     # #### Options
     #   * flags: Alternative place to pass the mode strings above
@@ -83,6 +80,12 @@ module Qfs
       force_remove(force) { super(path) }
     end
 
+    ##
+    # Read from a file
+    def read(path, len = nil)
+      open(path, 'r') { |f| f.read(len) }
+    end
+
     private
 
     ##
@@ -101,17 +104,23 @@ module Qfs
     # Maps mode strings to oflags
     MODE_STR_TO_FLAGS = {
       'r' => Qfs::O_RDONLY,
-      'r+' => Qfs::O_RDWR,
       'w' => Qfs::O_WRONLY | Qfs::O_TRUNC | Qfs::O_CREAT,
-      'w+' => Qfs::O_RDWR | Qfs::O_CREAT,
       'a' => Qfs::O_WRONLY | Qfs::O_APPEND | Qfs::O_CREAT,
-      'a+' => Qfs::O_RDWR | Qfs::O_APPEND | Qfs::O_CREAT,
     }
 
     ##
     # Convert the mode strings to oflags
     def mode_to_flags(mode)
       MODE_STR_TO_FLAGS[mode]
+    end
+  end
+
+  class File
+    ##
+    # Read from a file.  Don't specify a length to read the entire file.
+    def read(len = nil)
+      len ||= stat.size
+      read_len(len)
     end
   end
 
