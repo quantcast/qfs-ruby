@@ -112,7 +112,6 @@ class TestQfs < Minitest::Test
     end
   end
 
-
   def teardown
     if @client.exists?(@file)
       @client.remove(@file) if @client.file?(@file)
