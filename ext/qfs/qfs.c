@@ -84,6 +84,17 @@ static VALUE qfs_file_tell(VALUE self) {
 	return INT2FIX(offset);
 }
 
+static VALUE qfs_file_stat(VALUE self) {
+	struct qfs_file *file;
+	struct qfs_client *client;
+	Data_Get_Struct(self, struct qfs_file, file);
+	Data_Get_Struct(file->client, struct qfs_client, client);
+	struct qfs_attr *attr = ALLOC(struct qfs_attr);
+	int res = qfs_stat_fd(client->qfs, file->fd, attr);
+	QFS_CHECK_ERR(res);
+	return Data_Wrap_Struct(cQfsAttr, NULL, free, attr);
+}
+
 static VALUE qfs_file_write(VALUE self, VALUE str) {
 	struct qfs_file *file;
 	struct qfs_client *client;
@@ -327,6 +338,17 @@ static VALUE qfs_client_rmdir(VALUE self, VALUE path) {
 	return RES2BOOL(res);
 }
 
+static VALUE qfs_client_stat(VALUE self, VALUE path) {
+	Check_Type(path, T_STRING);
+	char *p = StringValueCStr(path);
+	struct qfs_client *client;
+	Data_Get_Struct(self, struct qfs_client, client);
+	struct qfs_attr *attr = ALLOC(struct qfs_attr);
+	int res = qfs_stat(client->qfs, p, attr);
+	QFS_CHECK_ERR(res);
+	return Data_Wrap_Struct(cQfsAttr, NULL, free, attr);
+}
+
 void Init_qfs() {
 	mQfs = rb_define_module("Qfs");
 
@@ -346,11 +368,13 @@ void Init_qfs() {
 	rb_define_method(cQfsBaseClient, "isdirectory", qfs_client_isdirectory, 1);
 	rb_define_method(cQfsBaseClient, "mkdir", qfs_client_mkdir, 2);
 	rb_define_method(cQfsBaseClient, "rmdir", qfs_client_rmdir, 1);
+	rb_define_method(cQfsBaseClient, "stat", qfs_client_stat, 1);
 
 	cQfsFile = rb_define_class_under(mQfs, "File", rb_cObject);
 	rb_define_alloc_func(cQfsFile, qfs_file_allocate);
 	rb_define_method(cQfsFile, "read", qfs_file_read, 1);
 	rb_define_method(cQfsFile, "tell", qfs_file_tell, 0);
+	rb_define_method(cQfsFile, "stat", qfs_file_stat, 0);
 	rb_define_method(cQfsFile, "write", qfs_file_write, 1);
 	rb_define_method(cQfsFile, "close", qfs_file_close, 0);
 

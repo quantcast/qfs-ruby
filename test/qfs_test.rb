@@ -87,6 +87,32 @@ class TestQfs < Minitest::Test
     assert !@client.directory?(@file)
   end
 
+  def test_client_stat
+    data = random_data(rand(1000))
+    @client.open(@file, 'w') do |f|
+      f.write(data)
+    end
+
+    res = @client.stat(@file)
+
+    assert_equal(data.length, res.size)
+    assert_equal(File.basename(@file), res.filename)
+  end
+
+  def test_file_stat
+    data = random_data(rand(1000))
+    @client.open(@file, 'w') do |f|
+      f.write(data)
+    end
+
+    @client.open(@file, 'r') do |f|
+      res = f.stat
+      assert_equal(data.length, res.size)
+      assert_equal(File.basename(@file), res.filename)
+    end
+  end
+
+
   def teardown
     if @client.exists?(@file)
       @client.remove(@file) if @client.file?(@file)
