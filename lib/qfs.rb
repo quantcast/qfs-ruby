@@ -74,10 +74,21 @@ module Qfs
       super(path, mode)
     end
 
+    # Create a directory
+    def mkdir_p(path, mode=600)
+      super(path, mode)
+    end
+
     ##
     # Remove a directory
     def rmdir(path, force = false)
       force_remove(force) { super(path) }
+    end
+
+    ##
+    # Remove a directory recursively
+    def rm_rf(path, force = false)
+      force_remove(force) { rmdirs(path) }
     end
 
     ##

@@ -302,11 +302,12 @@ static VALUE qfs_client_remove(VALUE self, VALUE path) {
 	return INT2NUM(1);
 }
 
-static VALUE qfs_client_mkdir(VALUE self, VALUE path, VALUE mode) {
+static VALUE qfs_client_mkdir_base(VALUE self, VALUE path, VALUE mode,
+		int (*mkdir_func)(struct QFS*, const char*, mode_t)) {
 	Check_Type(path, T_STRING);
 	char *p = StringValueCStr(path);
 
-	// Check if the directory already exists
+	// check if the directory already exists
 	if (RTEST(qfs_client_exists(self, path))) {
 		rb_raise(eQfsError, "Can't create directory %s. It already exists",
 				p);
@@ -316,12 +317,21 @@ static VALUE qfs_client_mkdir(VALUE self, VALUE path, VALUE mode) {
 	Data_Get_Struct(self, struct qfs_client, client);
 	Check_Type(mode, T_FIXNUM);
 	uint16_t imode = FIX2INT(mode);
-	int res = qfs_mkdir(client->qfs, p, imode);
+	int res = (*mkdir_func)(client->qfs, p, imode);
 	QFS_CHECK_ERR(res);
 	return RES2BOOL(res);
 }
 
-static VALUE qfs_client_rmdir(VALUE self, VALUE path) {
+static VALUE qfs_client_mkdir(VALUE self, VALUE path, VALUE mode) {
+	return qfs_client_mkdir_base(self, path, mode, qfs_mkdir);
+}
+
+static VALUE qfs_client_mkdir_p(VALUE self, VALUE path, VALUE mode) {
+	return qfs_client_mkdir_base(self, path, mode, qfs_mkdirs);
+}
+
+static VALUE qfs_client_rmdir_base(VALUE self, VALUE path,
+		int (*rmdir_func)(struct QFS*, const char*)) {
 	Check_Type(path, T_STRING);
 	char *p = StringValueCStr(path);
 
@@ -333,9 +343,17 @@ static VALUE qfs_client_rmdir(VALUE self, VALUE path) {
 
 	struct qfs_client *client;
 	Data_Get_Struct(self, struct qfs_client, client);
-	int res = qfs_rmdir(client->qfs, p);
+	int res = (*rmdir_func)(client->qfs, p);
 	QFS_CHECK_ERR(res);
 	return RES2BOOL(res);
+}
+
+static VALUE qfs_client_rmdir(VALUE self, VALUE path) {
+	return qfs_client_rmdir_base(self, path, qfs_rmdir);
+}
+
+static VALUE qfs_client_rmdirs(VALUE self, VALUE path) {
+	return qfs_client_rmdir_base(self, path, qfs_rmdirs);
 }
 
 static VALUE qfs_client_stat(VALUE self, VALUE path) {
@@ -367,7 +385,9 @@ void Init_qfs() {
 	rb_define_method(cQfsBaseClient, "isfile", qfs_client_isfile, 1);
 	rb_define_method(cQfsBaseClient, "isdirectory", qfs_client_isdirectory, 1);
 	rb_define_method(cQfsBaseClient, "mkdir", qfs_client_mkdir, 2);
+	rb_define_method(cQfsBaseClient, "mkdir_p", qfs_client_mkdir_p, 2);
 	rb_define_method(cQfsBaseClient, "rmdir", qfs_client_rmdir, 1);
+	rb_define_method(cQfsBaseClient, "rmdirs", qfs_client_rmdirs, 1);
 	rb_define_method(cQfsBaseClient, "stat", qfs_client_stat, 1);
 
 	cQfsFile = rb_define_class_under(mQfs, "File", rb_cObject);
