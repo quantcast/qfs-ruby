@@ -250,31 +250,26 @@ static VALUE qfs_client_readdir(VALUE self, VALUE path) {
 	return INT2FIX(count);
 }
 
-static VALUE qfs_client_exists(VALUE self, VALUE path) {
+static VALUE qfs_client_path_checking(VALUE self, VALUE path,
+		bool (*check_func)(struct QFS*, const char*)) {
 	Check_Type(path, T_STRING);
 	char *p = StringValueCStr(path);
 	struct qfs_client *client;
 	Data_Get_Struct(self, struct qfs_client, client);
-	bool exists = qfs_exists(client->qfs, p);
+	bool exists = (*check_func)(client->qfs, p);
 	return INT2BOOL(exists);
 }
 
+static VALUE qfs_client_exists(VALUE self, VALUE path) {
+	return qfs_client_path_checking(self, path, qfs_exists);
+}
+
 static VALUE qfs_client_isfile(VALUE self, VALUE path) {
-	Check_Type(path, T_STRING);
-	char *p = StringValueCStr(path);
-	struct qfs_client *client;
-	Data_Get_Struct(self, struct qfs_client, client);
-	bool isfile = qfs_isfile(client->qfs, p);
-	return INT2BOOL(isfile);
+	return qfs_client_path_checking(self, path, qfs_isfile);
 }
 
 static VALUE qfs_client_isdirectory(VALUE self, VALUE path) {
-	Check_Type(path, T_STRING);
-	char *p = StringValueCStr(path);
-	struct qfs_client *client;
-	Data_Get_Struct(self, struct qfs_client, client);
-	bool isfile = qfs_isdirectory(client->qfs, p);
-	return INT2BOOL(isfile);
+	return qfs_client_path_checking(self, path, qfs_isdirectory);
 }
 
 static VALUE qfs_client_remove(VALUE self, VALUE path) {
