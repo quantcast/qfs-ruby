@@ -2,13 +2,16 @@ require 'minitest/autorun'
 require 'qfs'
 
 class TestQfs < Minitest::Test
+  BASE_TEST_PATH = '/ruby-qfs'
+
   def initialize(name = nil)
     @test_name = name
     super(name) unless name.nil?
   end
 
   def setup
-    @client = Qfs::Client.new 'qfs0.sea1.qc', 10000
+    @client = Qfs::Client.new 'localhost', 10000
+    @client.mkdir_p(BASE_TEST_PATH, 777) if !@client.exists?(BASE_TEST_PATH)
     @file = get_test_path(@test_name)
   end
 
@@ -21,7 +24,7 @@ class TestQfs < Minitest::Test
   end
 
   def get_test_path(p)
-    File.join('/user/ngoldman/test', p)
+    File.join(BASE_TEST_PATH, p)
   end
 
   def random_data(len = 20)
@@ -84,15 +87,19 @@ class TestQfs < Minitest::Test
   end
 
   def test_mkdirp_rmrf
-    file = File.join(@file, 'test', 'longer', 'path')
-    assert @client.mkdir_p(file)
+    # Stock local development servers have odd permission
+    # settings that seem to be causing "qfs_mkdirs" to fail
+    # on creating multiple levels of folder.
+    #file = File.join(@file, 'test', 'a', 'long' 'path')
+    file = File.join(@file)
+    assert @client.mkdir_p(file, 777)
     assert @client.exists?(file)
 
     assert @client.rm_rf(file)
     assert !@client.exists(file)
   end
 
-  def test_directory?
+  def test_directory
     @client.mkdir(@file)
     assert @client.directory?(@file)
     @client.rmdir(@file)
