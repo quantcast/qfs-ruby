@@ -209,4 +209,12 @@ class TestQfs < Minitest::Test
     attrs = @client.readdir(@file)
     attrs.each { |f| assert_includes(files, f.filename) }
   end
+
+  def test_client_read_write
+    [0..5].each do
+      data = random_data
+      @client.write(@file, data)
+      assert_equal(data, @client.read(@file))
+    end
+  end
 end
