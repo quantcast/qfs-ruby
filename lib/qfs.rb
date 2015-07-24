@@ -57,6 +57,8 @@ module Qfs
       exists(path)
     end
 
+    alias exist? exists?
+
     alias file? isfile
 
     alias directory? isdirectory
@@ -91,21 +93,15 @@ module Qfs
       force_remove(force) { super(path) }
     end
 
+    ##
+    # Recursively remove directories
     def rm_rf(path, force = false)
       force_remove(force) do
         return remove(path) if file?(path)
         readdir(path) do |f|
-          unless f.filename == '.' || f.filename == '..'
-            fpath = ::File.join(path, f.filename)
-            if directory?(fpath)
-              begin
-                rmdir(fpath)
-              rescue Qfs::Error
-                rm_rf(fpath)
-              end
-            end
-            remove(fpath)
-          end
+          fpath = ::File.join(path, f.filename)
+          rm_rf(fpath) if directory?(fpath)
+          remove(fpath) if file?(fpath)
         end
         rmdir(path)
       end

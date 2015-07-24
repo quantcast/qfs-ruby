@@ -217,4 +217,18 @@ class TestQfs < Minitest::Test
       assert_equal(data, @client.read(@file))
     end
   end
+
+  def test_rm_rf
+    @client.mkdir(@file, 0777)
+    data = random_data
+    data.length.times do |i|
+      args = [@file].concat(data.chars[0..i])
+      path = File.send(:join, args)
+      @client.mkdir(path, 0777)
+      @client.write(File.join(path, 'file'), data)
+    end
+
+    @client.rm_rf(@file)
+    assert !@client.exists?(@file)
+  end
 end
