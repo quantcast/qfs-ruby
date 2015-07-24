@@ -118,6 +118,12 @@ module Qfs
     end
 
     ##
+    # Write to a file
+    def write(path, data)
+      open(path, 'w') { |f| f.write(data) }
+    end
+
+    ##
     # Read from a directory, optionally outputting a list of Attr
     # objects or yielding to a block
     def readdir(path)

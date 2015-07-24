@@ -179,7 +179,7 @@ class TestQfs < Minitest::Test
   def test_chmod_recursive
     @client.mkdir(@file, 0777)
     testfile = File.join(@file, 'testfile')
-    @client.open(testfile, 'w') { |f| f.write('') }
+    @client.write(testfile, '')
 
     run_chmod = proc do |mode|
       @client.chmod(@file, mode, recursive: true)
@@ -200,7 +200,7 @@ class TestQfs < Minitest::Test
     @client.mkdir(@file, 0777)
     files = [0..5].map do
       name = random_data(10)
-      @client.open(File.join(@file, name), 'w') { |f| f.write('test') }
+      @client.write(File.join(@file, name), 'test')
       name
     end
 
