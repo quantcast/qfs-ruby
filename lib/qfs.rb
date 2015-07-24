@@ -116,7 +116,6 @@ module Qfs
     MODE_STR_TO_FLAGS = {
       'r' => Qfs::O_RDONLY,
       'w' => Qfs::O_WRONLY | Qfs::O_TRUNC | Qfs::O_CREAT,
-      'a' => Qfs::O_WRONLY | Qfs::O_APPEND | Qfs::O_CREAT,
     }
 
     ##
