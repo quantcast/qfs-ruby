@@ -10,5 +10,6 @@ Rake::ExtensionTask.new do |ext|
 end
 Rake::TestTask.new test: :compile do |t|
     t.pattern = 'test/*_test.rb'
+    t.libs << 'test'
 end
 task default: :test
