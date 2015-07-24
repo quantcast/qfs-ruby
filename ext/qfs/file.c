@@ -73,6 +73,18 @@ static VALUE qfs_file_close(VALUE self) {
 	return Qnil;
 }
 
+static VALUE qfs_file_chmod(VALUE self, VALUE mode) {
+	struct qfs_file *file;
+	struct qfs_client *client;
+	Check_Type(mode, T_FIXNUM);
+	mode_t imode = (mode_t)FIX2INT(mode);
+	Data_Get_Struct(self, struct qfs_file, file);
+	Data_Get_Struct(file->client, struct qfs_client, client);
+	int res = qfs_chmod_fd(client->qfs, file->fd, imode);
+	QFS_CHECK_ERR(res);
+	return RES2BOOL(res);
+}
+
 void qfs_file_deallocate(void * filevp) {
 	TRACE;
 	/* the client might be deallocated already, so don't try to close ourselves */
@@ -102,4 +114,5 @@ void init_qfs_ext_file() {
 	rb_define_method(cQfsFile, "stat", qfs_file_stat, 0);
 	rb_define_method(cQfsFile, "write", qfs_file_write, 1);
 	rb_define_method(cQfsFile, "close", qfs_file_close, 0);
+	rb_define_method(cQfsFile, "chmod", qfs_file_chmod, 1);
 }

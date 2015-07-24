@@ -177,6 +177,21 @@ class TestQfs < Minitest::Test
     run_chmod.call(0777)
   end
 
+  def test_chmod_file
+    @client.write(@file, '')
+
+    run_chmod = proc do |mode|
+      @client.open(@file, 'r') { |f| f.chmod(mode) }
+      Qfs::Client.with_client('localhost', 10000) do |c|
+        assert_equal(mode, c.stat(@file).mode)
+      end
+    end
+
+    run_chmod.call(0654)
+    run_chmod.call(0643)
+    run_chmod.call(0777)
+  end
+
   def test_chmod_recursive
     @client.mkdir(@file, 0777)
     testfile = File.join(@file, 'testfile')
