@@ -199,10 +199,8 @@ class TestQfs < Minitest::Test
 
     run_chmod = proc do |mode|
       @client.chmod(@file, mode, recursive: true)
-      Qfs::Client.with_client('localhost', 10000) do |c|
-        assert_equal(mode, c.stat(@file).mode)
-        assert_equal(mode, c.stat(testfile).mode)
-      end
+      assert_equal(mode, @client.stat(@file).mode)
+      assert_equal(mode, @client.stat(testfile).mode)
     end
 
     run_chmod.call(0777)

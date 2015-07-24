@@ -141,6 +141,10 @@ module Qfs
       super(path, mode_int)
     end
 
+    def stat(path)
+      super(path)
+    end
+
     private
 
     ##

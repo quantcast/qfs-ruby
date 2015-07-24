@@ -251,6 +251,15 @@ static VALUE qfs_client_chmod_r(VALUE self, VALUE path, VALUE mode) {
 	return qfs_client_chmod_base(self, path, mode, qfs_chmod_r);
 }
 
+static VALUE qfs_set_attribute_revalidate_time(VALUE self, VALUE seconds) {
+	Check_Type(seconds, T_FIXNUM);
+	int secs = FIX2INT(seconds);
+	struct qfs_client *client;
+	Data_Get_Struct(self, struct qfs_client, client);
+	qfs_set_fileattributerevalidatetime(client->qfs, secs);
+	return Qnil;
+}
+
 void Init_qfs_ext() {
 	mQfs = rb_define_module("Qfs");
 
@@ -273,6 +282,8 @@ void Init_qfs_ext() {
 	rb_define_method(cQfsBaseClient, "stat", qfs_client_stat, 1);
 	rb_define_method(cQfsBaseClient, "chmod", qfs_client_chmod, 2);
 	rb_define_private_method(cQfsBaseClient, "chmod_r", qfs_client_chmod_r, 2);
+	rb_define_private_method(cQfsBaseClient, "set_attribute_revalidate_time",
+			qfs_set_attribute_revalidate_time, 1);
 
 	init_qfs_ext_file();
 	init_qfs_ext_attr();
