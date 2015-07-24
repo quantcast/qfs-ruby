@@ -93,9 +93,10 @@ module Qfs
 
     def rm_rf(path, force = false)
       force_remove(force) do
+        return remove(path) if file?(path)
         readdir(path) do |f|
           unless f.filename == '.' || f.filename == '..'
-            fpath = IO::File.join(path, f.filename)
+            fpath = ::File.join(path, f.filename)
             if directory?(fpath)
               begin
                 rmdir(fpath)
@@ -117,6 +118,20 @@ module Qfs
     end
 
     ##
+    # Read from a directory, optionally outputting a list of Attr
+    # objects or yielding to a block
+    def readdir(path)
+      attrs = []
+      super(path) do |attr|
+        unless is_current_or_previous_dir(attr.filename)
+          if block_given? then yield(attr) else attrs.push(attr) end
+        end
+      end
+
+      return attrs unless block_given?
+    end
+
+    ##
     # Change the permissions of a file or directory
     # Specify "recursive: true" if needed
     def chmod(path, mode_int, options = {})
@@ -125,6 +140,18 @@ module Qfs
     end
 
     private
+
+    ##
+    # Return if the specified string is the path to the current
+    # directory '.' or to the previous directory '..'
+    def is_current_or_previous_dir(name)
+      case name
+      when '.', '..'
+        true
+      else
+        false
+      end
+    end
 
     ##
     # If force is true, call the block and just return zero if it

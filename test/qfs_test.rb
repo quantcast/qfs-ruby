@@ -195,4 +195,18 @@ class TestQfs < Minitest::Test
 
     @client.remove(testfile)
   end
+
+  def test_readdir
+    @client.mkdir(@file, 0777)
+    files = [0..5].map do
+      name = random_data(10)
+      @client.open(File.join(@file, name), 'w') { |f| f.write('test') }
+      name
+    end
+
+    @client.readdir(@file) { |f| assert_includes(files, f.filename) }
+
+    attrs = @client.readdir(@file)
+    attrs.each { |f| assert_includes(files, f.filename) }
+  end
 end
