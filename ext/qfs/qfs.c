@@ -362,7 +362,7 @@ static VALUE qfs_client_stat(VALUE self, VALUE path) {
 	return Data_Wrap_Struct(cQfsAttr, NULL, free, attr);
 }
 
-void Init_qfs() {
+void Init_qfs_ext() {
 	mQfs = rb_define_module("Qfs");
 
 	if (getenv("RUBY_QFS_TRACE")) {

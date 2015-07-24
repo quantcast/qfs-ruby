@@ -1,5 +1,5 @@
 require 'qfs/version'
-require 'qfs.bundle'
+require 'qfs_ext'
 require 'fcntl'
 
 ##
