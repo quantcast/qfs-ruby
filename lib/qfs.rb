@@ -52,6 +52,18 @@ module Qfs
     end
 
     ##
+    # Open a connection on the specified host ane post, and yield it
+    # to a block
+    def self.with_client host, port
+      c = self.new host, port
+      begin
+        yield c
+      ensure
+        c.release
+      end
+    end
+
+    ##
     # Check if the specified (absolute) path exists.
     def exists?(path)
       exists(path)
@@ -194,38 +206,6 @@ module Qfs
     end
   end
 
-  class BaseClient
-    def self.with_client host, port
-      c = self.new host, port
-      begin
-        yield c
-      ensure
-        c.release
-      end
-    end
-    def intervals path
-      readdir path do |y|
-        year = y.filename
-        if year.match /\d{4}/
-          readdir "#{path}/#{year}" do |m|
-            month = m.filename
-            if month.match /\d\d/
-              readdir "#{path}/#{year}/#{month}" do |d|
-                day = d.filename
-                if day.match /\d\d/
-                  readdir "#{path}/#{year}/#{month}/#{day}" do |i|
-                    if i.filename.match /\.s\d+\.e\d+/
-                      yield "#{path}/#{year}/#{month}/#{day}/#{i.filename}"
-                    end
-                  end
-                end
-              end
-            end
-          end
-        end
-      end
-    end
-  end
   class Attr
     def to_s
       m = mode
