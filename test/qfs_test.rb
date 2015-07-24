@@ -9,17 +9,22 @@ class TestQfs < Minitest::Test
     super(name) unless name.nil?
   end
 
-  def setup
-    @client = Qfs::Client.new 'localhost', 10000
-    @client.mkdir_p(BASE_TEST_PATH, 777) if !@client.exists?(BASE_TEST_PATH)
-    @file = get_test_path(@test_name)
-  end
-
-  def teardown
+  def clear_test_files
     if @client.exists?(@file)
       @client.remove(@file) if @client.file?(@file)
       @client.rm_rf(@file) if @client.directory?(@file)
     end
+  end
+
+  def setup
+    @client = Qfs::Client.new 'localhost', 10000
+    @client.mkdir_p(BASE_TEST_PATH, 0777) if !@client.exists?(BASE_TEST_PATH)
+    @file = get_test_path(@test_name)
+    clear_test_files
+  end
+
+  def teardown
+    clear_test_files
     @client.release
   end
 
@@ -86,7 +91,7 @@ class TestQfs < Minitest::Test
     assert_equal(0, @client.remove(@file, true))
   end
 
-  def test_mkdirp_rmrf
+  def test_mkdirp_rmdirs
     # Stock local development servers have odd permission
     # settings that seem to be causing "qfs_mkdirs" to fail
     # on creating multiple levels of folder.
@@ -95,7 +100,7 @@ class TestQfs < Minitest::Test
     assert @client.mkdir_p(file, 777)
     assert @client.exists?(file)
 
-    assert @client.rm_rf(file)
+    assert @client.rmdirs(file)
     assert !@client.exists(file)
   end
 
@@ -154,5 +159,40 @@ class TestQfs < Minitest::Test
     @client.open(@file, 'w') { |f| f.write(data) }
     assert_equal(data[0..(len-1)], @client.read(@file, len))
     assert_equal(data, @client.read(@file))
+  end
+
+  def test_chmod
+    @client.open(@file, 'w') { |f| f.write('test') }
+
+    run_chmod = proc do |mode|
+      @client.chmod(@file, mode)
+      Qfs::Client.with_client('localhost', 10000) do |c|
+        assert_equal(mode, c.stat(@file).mode)
+      end
+    end
+
+    run_chmod.call(0654)
+    run_chmod.call(0643)
+    run_chmod.call(0777)
+  end
+
+  def test_chmod_recursive
+    @client.mkdir(@file, 0777)
+    testfile = File.join(@file, 'testfile')
+    @client.open(testfile, 'w') { |f| f.write('') }
+
+    run_chmod = proc do |mode|
+      @client.chmod(@file, mode, recursive: true)
+      Qfs::Client.with_client('localhost', 10000) do |c|
+        assert_equal(mode, c.stat(@file).mode)
+        assert_equal(mode, c.stat(testfile).mode)
+      end
+    end
+
+    run_chmod.call(0777)
+    run_chmod.call(0766)
+    run_chmod.call(0755)
+
+    @client.remove(testfile)
   end
 end

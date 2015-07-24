@@ -215,6 +215,10 @@ static VALUE qfs_client_rmdirs(VALUE self, VALUE path) {
 	return qfs_client_rmdir_base(self, path, qfs_rmdirs);
 }
 
+// TODO making multiple stat calls against the same file appears to return the
+// same result, event if the properties change.  This can be reproduced by
+// the permissions on a file, stat'ing it, setting the permissions to something
+// else, and stat'ing it again.  This appears to be an issue with the QFS C api.
 static VALUE qfs_client_stat(VALUE self, VALUE path) {
 	Check_Type(path, T_STRING);
 	char *p = StringValueCStr(path);
@@ -224,6 +228,27 @@ static VALUE qfs_client_stat(VALUE self, VALUE path) {
 	int res = qfs_stat(client->qfs, p, attr);
 	QFS_CHECK_ERR(res);
 	return Data_Wrap_Struct(cQfsAttr, NULL, free, attr);
+}
+
+static VALUE qfs_client_chmod_base(VALUE self, VALUE path, VALUE mode,
+		int (*chmod_func)(struct QFS*, const char*, mode_t)) {
+	Check_Type(path, T_STRING);
+	Check_Type(mode, T_FIXNUM);
+	struct qfs_client *client;
+	Data_Get_Struct(self, struct qfs_client, client);
+	char *p = StringValueCStr(path);
+	uint16_t imode = (uint16_t)FIX2INT(mode);
+	int res = (*chmod_func)(client->qfs, p, imode);
+	QFS_CHECK_ERR(res);
+	return RES2BOOL(res);
+}
+
+static VALUE qfs_client_chmod(VALUE self, VALUE path, VALUE mode) {
+	return qfs_client_chmod_base(self, path, mode, qfs_chmod);
+}
+
+static VALUE qfs_client_chmod_r(VALUE self, VALUE path, VALUE mode) {
+	return qfs_client_chmod_base(self, path, mode, qfs_chmod_r);
 }
 
 void Init_qfs_ext() {
@@ -246,6 +271,8 @@ void Init_qfs_ext() {
 	rb_define_method(cQfsBaseClient, "rmdir", qfs_client_rmdir, 1);
 	rb_define_method(cQfsBaseClient, "rmdirs", qfs_client_rmdirs, 1);
 	rb_define_method(cQfsBaseClient, "stat", qfs_client_stat, 1);
+	rb_define_method(cQfsBaseClient, "chmod", qfs_client_chmod, 2);
+	rb_define_private_method(cQfsBaseClient, "chmod_r", qfs_client_chmod_r, 2);
 
 	init_qfs_ext_file();
 	init_qfs_ext_attr();

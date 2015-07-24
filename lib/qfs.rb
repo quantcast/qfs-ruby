@@ -87,14 +87,41 @@ module Qfs
 
     ##
     # Remove a directory recursively
+    def rmdirs(path, force = false)
+      force_remove(force) { super(path) }
+    end
+
     def rm_rf(path, force = false)
-      force_remove(force) { rmdirs(path) }
+      force_remove(force) do
+        readdir(path) do |f|
+          unless f.filename == '.' || f.filename == '..'
+            fpath = IO::File.join(path, f.filename)
+            if directory?(fpath)
+              begin
+                rmdir(fpath)
+              rescue Qfs::Error
+                rm_rf(fpath)
+              end
+            end
+            remove(fpath)
+          end
+        end
+        rmdir(path)
+      end
     end
 
     ##
     # Read from a file
     def read(path, len = nil)
       open(path, 'r') { |f| f.read(len) }
+    end
+
+    ##
+    # Change the permissions of a file or directory
+    # Specify "recursive: true" if needed
+    def chmod(path, mode_int, options = {})
+      return chmod_r(path, mode_int) if options[:recursive]
+      super(path, mode_int)
     end
 
     private
