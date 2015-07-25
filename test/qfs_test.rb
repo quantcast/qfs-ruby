@@ -127,6 +127,8 @@ class TestQfs < Minitest::Test
 
     assert_equal(data.length, res.size)
     assert_equal(File.basename(@file), res.filename)
+
+    assert_raises(Qfs::Error) { @client.stat('not a real file') }
   end
 
   def test_file_stat

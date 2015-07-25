@@ -153,6 +153,8 @@ module Qfs
       super(path, mode_int)
     end
 
+    ##
+    # Get an Attr object for the file at the specified path
     def stat(path)
       super(path)
     end
