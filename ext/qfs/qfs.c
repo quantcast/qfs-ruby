@@ -5,6 +5,7 @@
 
 static VALUE cQfsBaseClient;
 VALUE eQfsError;
+VALUE mQfs;
 
 /* qfs_attr
  * This is just a dirent. */

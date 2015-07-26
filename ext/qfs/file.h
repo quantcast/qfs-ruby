@@ -3,6 +3,11 @@
 
 extern VALUE cQfsFile;
 
+struct qfs_file {
+	VALUE client;
+	int fd;
+};
+
 void qfs_file_deallocate(void*);
 void qfs_file_mark(void*);
 VALUE qfs_file_allocate(VALUE);

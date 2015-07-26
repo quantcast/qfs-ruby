@@ -3,7 +3,6 @@
 #include "attr.h"
 #include "file.h"
 
-VALUE mQfs;
 VALUE cQfsFile;
 
 /* qfs_file
