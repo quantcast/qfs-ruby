@@ -40,22 +40,18 @@ module Qfs
       params ||= options[:params]
       f = super(path, flags, mode, params)
 
-      if block_given?
-        begin
-          yield f
-        ensure
-          f.close
-        end
-      else
-        return f
-      end
+      return f unless block_given?
+
+      yield f
+      ensure
+        f.close
     end
 
     ##
     # Open a connection on the specified host ane post, and yield it
     # to a block
-    def self.with_client host, port
-      c = self.new host, port
+    def self.with_client(host, port)
+      c = new(host, port)
       begin
         yield c
       ensure
@@ -63,17 +59,12 @@ module Qfs
       end
     end
 
-    ##
-    # Check if the specified (absolute) path exists.
-    def exists?(path)
-      exists(path)
-    end
+    alias_method :exists?, :exists
+    alias_method :exist?, :exists?
 
-    alias exist? exists?
+    alias_method :file?, :isfile
 
-    alias file? isfile
-
-    alias directory? isdirectory
+    alias_method :directory?, :isdirectory
 
     ##
     # Remove a regular file.  Pass 'true' to stop exceptions from
@@ -84,12 +75,12 @@ module Qfs
 
     ##
     # Create a directory
-    def mkdir(path, mode=600)
+    def mkdir(path, mode = 600)
       super(path, mode)
     end
 
     # Create a directory
-    def mkdir_p(path, mode=600)
+    def mkdir_p(path, mode = 600)
       super(path, mode)
     end
 
@@ -137,8 +128,8 @@ module Qfs
     def readdir(path)
       attrs = []
       super(path) do |attr|
-        unless is_current_or_previous_dir(attr.filename)
-          if block_given? then yield(attr) else attrs.push(attr) end
+        unless current_or_previous_dir?(attr.filename)
+          block_given? ? yield(attr) : attrs.push(attr)
         end
       end
 
@@ -164,7 +155,7 @@ module Qfs
     ##
     # Return if the specified string is the path to the current
     # directory '.' or to the previous directory '..'
-    def is_current_or_previous_dir(name)
+    def current_or_previous_dir?(name)
       case name
       when '.', '..'
         true
@@ -189,7 +180,7 @@ module Qfs
     # Maps mode strings to oflags
     MODE_STR_TO_FLAGS = {
       'r' => Qfs::O_RDONLY,
-      'w' => Qfs::O_WRONLY | Qfs::O_TRUNC | Qfs::O_CREAT,
+      'w' => Qfs::O_WRONLY | Qfs::O_TRUNC | Qfs::O_CREAT
     }
 
     ##
@@ -210,18 +201,19 @@ module Qfs
 
   class Attr
     def to_s
+      "#{directory? ? 'd' : '-'}#{mode_to_s} #{filename}"
+    end
+
+    private
+
+    ##
+    # Get the mode as a typically formatted string
+    def mode_to_s
       m = mode
-      "#{directory? ? 'd' : '-'
-      }#{(m & (1 << 8)) != 0 ? 'r' : '-'
-      }#{(m & (1 << 7)) != 0 ? 'w' : '-'
-      }#{(m & (1 << 6)) != 0 ? 'x' : '-'
-      }#{(m & (1 << 5)) != 0 ? 'r' : '-'
-      }#{(m & (1 << 4)) != 0 ? 'w' : '-'
-      }#{(m & (1 << 3)) != 0 ? 'x' : '-'
-      }#{(m & (1 << 2)) != 0 ? 'r' : '-'
-      }#{(m & (1 << 1)) != 0 ? 'w' : '-'
-      }#{(m & (1 << 0)) != 0 ? 'x' : '-'
-      } #{filename}"
+      perms = %w(x w r)
+      (0..8).to_a.reverse.reduce('') do |sum, i|
+        sum + ((m & (1 << i)) != 0 ? perms[i % perms.length] : '-')
+      end
     end
   end
 end

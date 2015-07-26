@@ -37,6 +37,10 @@ class TestQfs < Minitest::Test
     (0...len).map { (65 + rand(26)).chr }.join
   end
 
+  def stat(path)
+    Qfs::Client.with_client('localhost', 10000) { |c| c.stat(path) }
+  end
+
   def test_open
     data = random_data
     @client.open(@file, 'w') do |f|
@@ -246,5 +250,17 @@ class TestQfs < Minitest::Test
 
     @client.rm_rf(@file)
     assert !@client.exists?(@file)
+  end
+
+  def test_attr_to_s
+    assert_attr = proc do |mode, str|
+      @client.write(@file, '')
+      @client.chmod(@file, mode)
+      assert_equal(str, stat(@file).to_s)
+    end
+
+    assert_attr.call(0777, "-rwxrwxrwx #{File.basename(@file)}")
+    assert_attr.call(0644, "-rw-r--r-- #{File.basename(@file)}")
+    assert_attr.call(0473, "-r--rwx-wx #{File.basename(@file)}")
   end
 end
