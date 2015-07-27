@@ -228,6 +228,8 @@ class TestQfs < Minitest::Test
 
     attrs = @client.readdir(@file)
     attrs.each { |f| assert_includes(files, f.filename) }
+
+    assert_raises(Qfs::Error) { @client.readdir('not a real path') }
   end
 
   def test_client_read_write

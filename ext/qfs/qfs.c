@@ -106,7 +106,6 @@ static VALUE qfs_client_readdir(VALUE self, VALUE path) {
 		count += 1;
 		rb_yield(Data_Wrap_Struct(cQfsAttr, NULL, free, tmp_attr));
 	}
-	// TODO: make this exception safe
 	qfs_iter_free(&iter);
 	QFS_CHECK_ERR(left);
 	return INT2FIX(count);
@@ -213,10 +212,11 @@ static VALUE qfs_client_rmdirs(VALUE self, VALUE path) {
 	return qfs_client_rmdir_base(self, path, qfs_rmdirs);
 }
 
-// TODO making multiple stat calls against the same file appears to return the
+// Making multiple stat calls against the same file appears to return the
 // same result, event if the properties change.  This can be reproduced by
 // the permissions on a file, stat'ing it, setting the permissions to something
-// else, and stat'ing it again.  This appears to be an issue with the QFS C api.
+// else, and stat'ing it again.  This appears to be a property of the
+// QFS C api.
 static VALUE qfs_client_stat(VALUE self, VALUE path) {
 	Check_Type(path, T_STRING);
 	char *p = StringValueCStr(path);
