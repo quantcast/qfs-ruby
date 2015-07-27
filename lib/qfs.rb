@@ -25,7 +25,6 @@ module Qfs
     # #### Modes
     #   * 'r': Read only
     #   * 'w': Write only, overwrite or create new file
-    #   * 'a': Write only, append to file or create.
     #
     # #### Options
     #   * flags: Alternative place to pass the mode strings above
@@ -208,6 +207,7 @@ module Qfs
 
     ##
     # Get the mode as a typically formatted string
+    # returns a string in the form 'rwxrwxrwx'
     def mode_to_s
       m = mode
       perms = %w(x w r)
