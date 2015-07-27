@@ -263,4 +263,27 @@ class TestQfs < Minitest::Test
     assert_attr.call(0644, "-rw-r--r-- #{File.basename(@file)}")
     assert_attr.call(0473, "-r--rwx-wx #{File.basename(@file)}")
   end
+
+  def test_client_move
+    newpath = get_test_path('new_test_file')
+    @client.write(@file, '')
+
+    assert !@client.exists(newpath)
+    @client.move(@file, newpath)
+
+    assert !@client.exists(@file)
+    assert @client.exists(newpath)
+
+    @client.remove(newpath)
+  end
+
+  def test_client_cd
+    @client.mkdir(@file)
+    @client.cd(@file)
+
+    assert_equal(@file, @client.cwd)
+
+    @client.cd('../')
+    assert_equal(BASE_TEST_PATH, @client.cwd)
+  end
 end

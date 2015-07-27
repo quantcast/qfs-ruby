@@ -223,6 +223,32 @@ module Qfs
       super(path)
     end
 
+    # Move a file to a new path.
+    #
+    # @param [String] old The path to the file to move
+    # @param [String] new The new destination
+    def move(old, new)
+      rename(old, new)
+    end
+
+    # Change the current working directory
+    #
+    # @param [String] path The directory to change to
+    def cd(path)
+      super(path)
+    end
+
+    # Return the current working directory
+    #
+    # @param [Int] len The length of the buffer that should be allocated
+    #                  to store the cwd.  An exception will be thrown if it
+    #                  is too small.
+    #
+    # @return [String] The current working directory
+    def cwd(len = 4096)
+      getwd(len)
+    end
+
     private
 
     # Return if the specified string is the path to the current

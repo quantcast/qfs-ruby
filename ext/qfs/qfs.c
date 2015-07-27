@@ -7,9 +7,6 @@ static VALUE cQfsBaseClient;
 VALUE eQfsError;
 VALUE mQfs;
 
-/* qfs_attr
- * This is just a dirent. */
-
 /* qfs_client */
 
 static void qfs_client_deallocate(void * qfsvp) {
@@ -252,6 +249,18 @@ static VALUE qfs_client_chmod_r(VALUE self, VALUE path, VALUE mode) {
 	return qfs_client_chmod_base(self, path, mode, qfs_chmod_r);
 }
 
+static VALUE qfs_client_rename(VALUE self, VALUE old, VALUE new) {
+	Check_Type(old, T_STRING);
+	Check_Type(new, T_STRING);
+	struct qfs_client *client;
+	Data_Get_Struct(self, struct qfs_client, client);
+	char *old_s = StringValueCStr(old);
+	char *new_s = StringValueCStr(new);
+	int res = qfs_rename(client->qfs, old_s, new_s);
+	QFS_CHECK_ERR(res);
+	return RES2BOOL(res);
+}
+
 static VALUE qfs_set_attribute_revalidate_time(VALUE self, VALUE seconds) {
 	Check_Type(seconds, T_FIXNUM);
 	int secs = FIX2INT(seconds);
@@ -259,6 +268,41 @@ static VALUE qfs_set_attribute_revalidate_time(VALUE self, VALUE seconds) {
 	Data_Get_Struct(self, struct qfs_client, client);
 	qfs_set_fileattributerevalidatetime(client->qfs, secs);
 	return Qnil;
+}
+
+static VALUE qfs_client_cd_base(VALUE self, VALUE path,
+		int (*cd_func)(struct QFS*, const char*)) {
+	Check_Type(path, T_STRING);
+	struct qfs_client *client;
+	Data_Get_Struct(self, struct qfs_client, client);
+	char *p = StringValueCStr(path);
+	int res = qfs_cd(client->qfs, p);
+	QFS_CHECK_ERR(res);
+	return Qnil;
+}
+
+static VALUE qfs_client_cd(VALUE self, VALUE path) {
+	return qfs_client_cd_base(self, path, qfs_cd);
+}
+
+static VALUE qfs_client_setwd(VALUE self, VALUE path) {
+	return qfs_client_cd_base(self, path, qfs_setwd);
+}
+
+static VALUE qfs_client_getwd(VALUE self, VALUE len) {
+	Check_Type(len, T_FIXNUM);
+	struct qfs_client *client;
+	Data_Get_Struct(self, struct qfs_client, client);
+	size_t n = (size_t)NUM2INT(len);
+	VALUE str = rb_str_buf_new((long)n);
+	int len_read = qfs_getwd(client->qfs, RSTRING_PTR(str), n);
+	QFS_CHECK_ERR(len_read);
+	if (len_read > (int)n) {
+		rb_raise(eQfsError, "Failed to read the entire CWD. "
+				"Path exceeded the inputted max length");
+	}
+	rb_str_set_len(str, len_read);
+	return str;
 }
 
 void Init_qfs_ext() {
@@ -282,6 +326,10 @@ void Init_qfs_ext() {
 	rb_define_method(cQfsBaseClient, "rmdirs", qfs_client_rmdirs, 1);
 	rb_define_method(cQfsBaseClient, "stat", qfs_client_stat, 1);
 	rb_define_method(cQfsBaseClient, "chmod", qfs_client_chmod, 2);
+	rb_define_method(cQfsBaseClient, "rename", qfs_client_rename, 2);
+	rb_define_method(cQfsBaseClient, "cd", qfs_client_cd, 1);
+	rb_define_method(cQfsBaseClient, "setwd", qfs_client_setwd, 1);
+	rb_define_method(cQfsBaseClient, "getwd", qfs_client_getwd, 1);
 	rb_define_private_method(cQfsBaseClient, "chmod_r", qfs_client_chmod_r, 2);
 	rb_define_private_method(cQfsBaseClient, "set_attribute_revalidate_time",
 			qfs_set_attribute_revalidate_time, 1);
