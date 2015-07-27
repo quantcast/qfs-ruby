@@ -78,7 +78,8 @@ module Qfs
     # being thrown if the file doesn't exist.
     #
     # @param [String] path the path to the file
-    # @param [Bool] force Weather or not to throw an exception if the operation fails
+    # @param [Bool] force Weather or not to throw an exception if the operation
+    #               fails
     #
     # @raise [Error] if force=false
     #
@@ -110,7 +111,8 @@ module Qfs
     # Remove a directory
     #
     # @param [String] path the path to the file
-    # @param [Bool] force Weather or not to throw an exception if the operation fails
+    # @param [Bool] force Weather or not to throw an exception if the operation
+    #                     fails
     #
     # @raise [Error] if force=false
     #
@@ -122,7 +124,8 @@ module Qfs
     # Remove a directory recursively
     #
     # @param [String] path the path to the file
-    # @param [Bool] force Weather or not to throw an exception if the operation fails
+    # @param [Bool] force Weather or not to throw an exception if the operation
+    #                     fails
     #
     # @raise [Error] if force=false
     #
@@ -134,7 +137,8 @@ module Qfs
     # Recursively remove directories and files.
     #
     # @param [String] path the path to the file
-    # @param [Bool] force Weather or not to throw an exception if the operation fails
+    # @param [Bool] force Weather or not to throw an exception if the operation
+    #                     fails
     #
     # @raise [Error] if force=false
     #
@@ -212,9 +216,9 @@ module Qfs
 
     # Get an Attr object for the file at the specified path
     #
-    # Note that this method will cache it's result for a specific file for the entire lifetime of
-    # a Client object.  If you need to get an updated Attr for a file/directory, you need to create a
-    # new Client.
+    # Note that this method will cache it's result for a specific file for the
+    # entire lifetime of a Client object.  If you need to get an updated Attr
+    # for a file/directory, you need to create a new Client.
     #
     # @param [String] path The path to the file or directory to stat
     #
@@ -289,7 +293,8 @@ module Qfs
   class File
     # Read from a file.  Don't specify a length to read the entire file.
     #
-    # @param [Int] len the number of bytes to read. Omit or set to nil to read the entire file.
+    # @param [Int] len the number of bytes to read. Omit or set to nil to
+    # read the entire file.
     #
     # @return [String] the data read from the file.
     def read(len = nil)
@@ -298,8 +303,8 @@ module Qfs
     end
   end
 
-  # A container class for the properties of a file or directory.  These can be retrieved with either
-  # Client::Stat or File::Stat.
+  # A container class for the properties of a file or directory.
+  # These can be retrieved with either Client::Stat or File::Stat.
   #
   # @attr_reader [String] filename The base name of the file/directory
   # @attr_reader [Int] id
@@ -307,10 +312,12 @@ module Qfs
   # @attr_reader [Int] uid User ID
   # @attr_reader [Int] gid Group ID
   # @attr_reader [Time] mtime The time last modified
-  # @attr_reader [Time] ctime The time the file/directory's attributes were changed
+  # @attr_reader [Time] ctime The time the file/directory's attributes were
+  #                           changed
   # @attr_reader [Bool] directory If the file is a directory
   # @attr_reader [Int] size The size of the file
-  # @attr_reader [Int] chunks The number of chunks in the file or files in a directory
+  # @attr_reader [Int] chunks The number of chunks in the file or files in a
+  #                           directory
   # @attr_reader [Int] directories The number of subdirectories
   # @attr_reader [Int] replicas
   # @attr_reader [Int] stripes
