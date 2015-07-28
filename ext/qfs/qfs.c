@@ -1,7 +1,8 @@
 #include "qfs.h"
-#include "util.h"
-#include "file.h"
+
 #include "attr.h"
+#include "file.h"
+#include "util.h"
 
 static VALUE cQfsBaseClient;
 VALUE eQfsError;
@@ -9,7 +10,7 @@ VALUE mQfs;
 
 /* qfs_client */
 
-static void qfs_client_deallocate(void * qfsvp) {
+static void qfs_client_deallocate(void *qfsvp) {
 	TRACE;
 	struct qfs_client *qfs = qfsvp;
 	if (qfs->qfs) {
@@ -21,7 +22,7 @@ static void qfs_client_deallocate(void * qfsvp) {
 }
 
 static VALUE qfs_client_allocate(VALUE klass) {
-	struct qfs_client * qfs = malloc(sizeof(struct qfs_client));
+	struct qfs_client *qfs = malloc(sizeof(struct qfs_client));
 	qfs->qfs = NULL;
 	return Data_Wrap_Struct(klass, NULL, qfs_client_deallocate, qfs);
 }
@@ -62,7 +63,7 @@ static VALUE qfs_client_open(int argc, VALUE *argv, VALUE self) {
 	Check_Type(path, T_STRING);
 	int ioflag;
 	uint16_t imode;
-	char * sparams;
+	char *sparams;
 	if (oflag == Qnil) {
 		ioflag = O_RDONLY;
 	} else {
@@ -95,7 +96,7 @@ static VALUE qfs_client_readdir(VALUE self, VALUE path) {
 	int left;
 	int count = 0;
 	Check_Type(path, T_STRING);
-	char * p = StringValueCStr(path);
+	char *p = StringValueCStr(path);
 	struct qfs_iter *iter = NULL;
 	struct qfs_attr attr;
 	struct qfs_client *client;

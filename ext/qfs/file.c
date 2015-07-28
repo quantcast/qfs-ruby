@@ -1,7 +1,8 @@
+#include "file.h"
+
+#include "attr.h"
 #include "qfs.h"
 #include "util.h"
-#include "attr.h"
-#include "file.h"
 
 VALUE cQfsFile;
 
@@ -84,14 +85,14 @@ static VALUE qfs_file_chmod(VALUE self, VALUE mode) {
 	return RES2BOOL(res);
 }
 
-void qfs_file_deallocate(void * filevp) {
+void qfs_file_deallocate(void *filevp) {
 	TRACE;
 	/* the client might be deallocated already, so don't try to close ourselves */
 	free(filevp);
 	TRACE_R;
 }
 
-void qfs_file_mark(void * filevp) {
+void qfs_file_mark(void *filevp) {
 	struct qfs_file *file = filevp;
 	if (file->client) {
 		rb_gc_mark(file->client);
@@ -99,7 +100,7 @@ void qfs_file_mark(void * filevp) {
 }
 
 VALUE qfs_file_allocate(VALUE klass) {
-	struct qfs_file * file = malloc(sizeof(struct qfs_file));
+	struct qfs_file *file = malloc(sizeof(struct qfs_file));
 	file->client = Qnil;
 	file->fd = QFS_NIL_FD;
 	return Data_Wrap_Struct(klass, qfs_file_mark, qfs_file_deallocate, file);

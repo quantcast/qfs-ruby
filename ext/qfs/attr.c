@@ -1,5 +1,6 @@
-#include "qfs.h"
 #include "attr.h"
+
+#include "qfs.h"
 #include "util.h"
 
 VALUE cQfsAttr;
