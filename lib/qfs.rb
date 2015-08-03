@@ -111,7 +111,7 @@ module Qfs
     # Remove a directory
     #
     # @param [String] path the path to the file
-    # @param [Bool] force Weather or not to throw an exception if the operation
+    # @param [Bool] force Whether or not to throw an exception if the operation
     #                     fails
     #
     # @raise [Error] if force=false
@@ -124,7 +124,7 @@ module Qfs
     # Remove a directory recursively
     #
     # @param [String] path the path to the file
-    # @param [Bool] force Weather or not to throw an exception if the directory
+    # @param [Bool] force Whether or not to throw an exception if the directory
     #                     doesn't exist.
     #
     # @raise [Error] if force=false
@@ -137,7 +137,7 @@ module Qfs
     # Recursively remove directories and files.
     #
     # @param [String] path the path to the file
-    # @param [Bool] force Weather or not to throw an exception if the directory
+    # @param [Bool] force Whether or not to throw an exception if the directory
     #                     doesn't exist.
     #
     # @raise [Error] if force=false
