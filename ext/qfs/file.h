@@ -1,6 +1,8 @@
 #ifndef QFS_EXT_FILE_H_
 #define QFS_EXT_FILE_H_
 
+#include <ruby.h>
+
 extern VALUE cQfsFile;
 
 struct qfs_file {

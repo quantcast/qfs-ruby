@@ -3,6 +3,8 @@
 
 #define QFS_NIL_FD -1
 
+#include <ruby.h>
+
 static int QFS_TRACE_ENABLED = 0;
 static inline void check_trace_enabled() {
 	if (getenv("RUBY_QFS_TRACE")) {

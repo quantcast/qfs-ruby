@@ -1,5 +1,6 @@
 #include "file.h"
 
+#include <ruby.h>
 #include "attr.h"
 #include "qfs.h"
 #include "util.h"
