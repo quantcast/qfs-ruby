@@ -5,9 +5,11 @@
 #include "file.h"
 #include "util.h"
 
-static VALUE cQfsBaseClient;
-VALUE eQfsError;
 VALUE mQfs;
+VALUE eQfsError;
+
+static VALUE cQfsBaseClient;
+static VALUE eQfsENOENTError;
 
 /* qfs_client */
 
@@ -139,13 +141,6 @@ static VALUE qfs_client_remove(VALUE self, VALUE path) {
 	Check_Type(path, T_STRING);
 	char *p = StringValueCStr(path);
 
-	// Check that the file exists
-	VALUE exists = qfs_client_exists(self, path);
-	if (!RTEST(exists)) {
-		rb_raise(eQfsError, "Can't remove %s.  It doesnt exist",
-			p);
-	}
-
 	// Check that the file is regular
 	VALUE isfile = qfs_client_isfile(self, path);
 	if (!RTEST(isfile)) {
@@ -156,6 +151,13 @@ static VALUE qfs_client_remove(VALUE self, VALUE path) {
 	struct qfs_client *client;
 	Data_Get_Struct(self, struct qfs_client, client);
 	int res = qfs_remove(client->qfs, p);
+
+	// Raise an exception if the file didn't exist
+	if (res == -2) {
+		rb_raise(eQfsENOENTError, "Can't remove %s.  It doesn't exist",
+			p);
+	}
+
 	QFS_CHECK_ERR(res);
 	return INT2NUM(1);
 }
@@ -193,17 +195,18 @@ static VALUE qfs_client_rmdir_base(VALUE self, VALUE path,
 	Check_Type(path, T_STRING);
 	char *p = StringValueCStr(path);
 
-	// Check if the directory doesnt exist
-	if (!RTEST(qfs_client_exists(self, path))) {
-		rb_raise(eQfsError, "Can't delete directory %s. It doesnt exist",
-				p);
-	}
-
 	struct qfs_client *client;
 	Data_Get_Struct(self, struct qfs_client, client);
 	int res = (*rmdir_func)(client->qfs, p);
+
+	// Raise an exception if the file didn't exist
+	if (res == -2) {
+		rb_raise(eQfsENOENTError, "Can't remove %s.  It doesn't exist",
+			p);
+	}
+
 	QFS_CHECK_ERR(res);
-	return RES2BOOL(res);
+	return INT2NUM(res);
 }
 
 static VALUE qfs_client_rmdir(VALUE self, VALUE path) {
@@ -340,4 +343,5 @@ void Init_qfs_ext() {
 	init_qfs_ext_attr();
 
 	eQfsError = rb_define_class_under(mQfs, "Error", rb_eStandardError);
+	eQfsENOENTError = rb_define_class_under(mQfs, "ENOENT", rb_eStandardError);
 }

@@ -46,7 +46,7 @@ module Qfs
         f.close
     end
 
-    # Open a connection on the specified host ane post, and yield it
+    # Open a connection on the specified host and post, and yield it
     # to a block
     #
     # @example Open a connection and yield to a block
@@ -54,7 +54,7 @@ module Qfs
     #     client.write('/file', '')
     #   end
     #
-    # @param [String] host the hostname to conenct to
+    # @param [String] host the hostname to connect to
     # @param [Int] port the port to connect to
     #
     # @yield [Client] a new client
@@ -78,8 +78,8 @@ module Qfs
     # being thrown if the file doesn't exist.
     #
     # @param [String] path the path to the file
-    # @param [Bool] force Weather or not to throw an exception if the operation
-    #               fails
+    # @param [Bool] force Wheather or not to throw an exception if file doesn't
+    #                     exist.
     #
     # @raise [Error] if force=false
     #
@@ -124,8 +124,8 @@ module Qfs
     # Remove a directory recursively
     #
     # @param [String] path the path to the file
-    # @param [Bool] force Weather or not to throw an exception if the operation
-    #                     fails
+    # @param [Bool] force Weather or not to throw an exception if the directory
+    #                     doesn't exist.
     #
     # @raise [Error] if force=false
     #
@@ -137,8 +137,8 @@ module Qfs
     # Recursively remove directories and files.
     #
     # @param [String] path the path to the file
-    # @param [Bool] force Weather or not to throw an exception if the operation
-    #                     fails
+    # @param [Bool] force Weather or not to throw an exception if the directory
+    #                     doesn't exist.
     #
     # @raise [Error] if force=false
     #
@@ -272,7 +272,7 @@ module Qfs
       return yield unless force
       begin
         return yield
-      rescue Qfs::Error
+      rescue Qfs::ENOENT
         return 0
       end
     end
@@ -304,7 +304,7 @@ module Qfs
   end
 
   # A container class for the properties of a file or directory.
-  # These can be retrieved with either Client::Stat or File::Stat.
+  # These can be retrieved with either Client::stat or File#stat.
   #
   # @attr_reader [String] filename The base name of the file/directory
   # @attr_reader [Int] id
@@ -339,7 +339,7 @@ module Qfs
     def mode_to_s
       m = mode
       perms = %w(x w r)
-      (0..8).to_a.reverse.reduce('') do |sum, i|
+      8.downto(0).reduce('') do |sum, i|
         sum + ((m & (1 << i)) != 0 ? perms[i % perms.length] : '-')
       end
     end
