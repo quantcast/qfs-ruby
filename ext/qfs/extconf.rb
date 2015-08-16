@@ -1,12 +1,13 @@
 require 'mkmf'
+require 'rbconfig'
 
 INCLUDE_DIRS = [
-	Config::CONFIG['includedir'],
+	RbConfig::CONFIG['includedir'],
 	'/usr/include',
 ]
 
 LIB_DIRS = [
-	Config::CONFIG['libdir'],
+	RbConfig::CONFIG['libdir'],
 	'/usr/lib',
 ]
 
