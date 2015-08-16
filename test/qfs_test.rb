@@ -3,7 +3,9 @@ require 'test_helper'
 require 'qfs'
 
 class TestQfs < Minitest::Test
-  BASE_TEST_PATH = '/ruby-qfs'
+  BASE_TEST_PATH = ENV['QFS_TEST_PATH'] || '/ruby-qfs'
+  TEST_HOST = ENV['QFS_TEST_HOST'] || 'localhost'
+  TEST_PORT = ENV['QFS_TEST_PORT'] || 10000
 
   def initialize(name = nil)
     @test_name = name
@@ -18,7 +20,7 @@ class TestQfs < Minitest::Test
   end
 
   def setup
-    @client = Qfs::Client.new 'localhost', 10000
+    @client = Qfs::Client.new TEST_HOST, TEST_PORT
     @client.mkdir_p(BASE_TEST_PATH, 0777) if !@client.exists?(BASE_TEST_PATH)
     @file = get_test_path(@test_name)
     clear_test_files
@@ -38,7 +40,7 @@ class TestQfs < Minitest::Test
   end
 
   def stat(path)
-    Qfs::Client.with_client('localhost', 10000) { |c| c.stat(path) }
+    Qfs::Client.with_client(TEST_HOST, TEST_PORT) { |c| c.stat(path) }
   end
 
   def test_open
@@ -172,7 +174,7 @@ class TestQfs < Minitest::Test
 
     run_chmod = proc do |mode|
       @client.chmod(@file, mode)
-      Qfs::Client.with_client('localhost', 10000) do |c|
+      Qfs::Client.with_client(TEST_HOST, TEST_PORT) do |c|
         assert_equal(mode, c.stat(@file).mode)
       end
     end
@@ -187,7 +189,7 @@ class TestQfs < Minitest::Test
 
     run_chmod = proc do |mode|
       @client.open(@file, 'r') { |f| f.chmod(mode) }
-      Qfs::Client.with_client('localhost', 10000) do |c|
+      Qfs::Client.with_client(TEST_HOST, TEST_PORT) do |c|
         assert_equal(mode, c.stat(@file).mode)
       end
     end
