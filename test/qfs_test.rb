@@ -5,7 +5,7 @@ require 'qfs'
 class TestQfs < Minitest::Test
   BASE_TEST_PATH = ENV['QFS_TEST_PATH'] || '/ruby-qfs'
   TEST_HOST = ENV['QFS_TEST_HOST'] || 'localhost'
-  TEST_PORT = ENV['QFS_TEST_PORT'] || 10000
+  TEST_PORT = (ENV['QFS_TEST_PORT'] || 10000).to_i
 
   def initialize(name = nil)
     @test_name = name
