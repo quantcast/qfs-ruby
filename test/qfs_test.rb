@@ -245,7 +245,7 @@ class TestQfs < Minitest::Test
     @client.mkdir(@file, 0777)
     data = random_data
     data.length.times do |i|
-      args = [@file].concat(data.chars[0..i])
+      args = [@file].concat(data.chars.to_a[0..i])
       path = File.send(:join, args)
       @client.mkdir(path, 0777)
       @client.write(File.join(path, 'file'), data)
