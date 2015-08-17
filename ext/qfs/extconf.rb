@@ -14,7 +14,7 @@ LIB_DIRS = [
 dir_config 'qfs', INCLUDE_DIRS, LIB_DIRS
 
 with_config('qfs-local-libs', '').split(':').each do |lib|
-	$LOCAL_LIBS << lib
+	$LOCAL_LIBS << " #{lib} "
 end
 
 abort '"kfs/c/qfs.h" is required' unless find_header 'kfs/c/qfs.h'
