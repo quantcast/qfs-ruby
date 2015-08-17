@@ -13,11 +13,11 @@ LIB_DIRS = [
 
 dir_config 'qfs', INCLUDE_DIRS, LIB_DIRS
 
-abort '"kfs/c/qfs.h" is required' unless find_header 'kfs/c/qfs.h'
-abort 'libqfsc is required' unless find_library 'qfsc', 'qfs_open'
-
 with_config('qfs-local-libs', '').split(':').each do |lib|
 	$LOCAL_LIBS << lib
 end
+
+abort '"kfs/c/qfs.h" is required' unless find_header 'kfs/c/qfs.h'
+abort 'libqfsc is required' unless find_library 'qfsc', 'qfs_open'
 
 create_makefile 'qfs_ext'
