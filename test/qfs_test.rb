@@ -169,6 +169,17 @@ class TestQfs < Minitest::Test
     assert_equal(data, @client.read(@file))
   end
 
+  def test_open_no_block
+    data = random_data
+    f = @client.open(@file, 'w')
+    f.write(data)
+    f.close
+
+    f = @client.open(@file, 'r')
+    assert_equal(data, f.read())
+    f.close
+  end
+
   def test_chmod
     @client.open(@file, 'w') { |f| f.write('test') }
 

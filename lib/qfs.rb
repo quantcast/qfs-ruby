@@ -41,9 +41,11 @@ module Qfs
 
       return f unless block_given?
 
-      yield f
+      begin
+        yield f
       ensure
         f.close
+      end
     end
 
     # Open a connection on the specified host and post, and yield it
