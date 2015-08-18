@@ -3,6 +3,7 @@ require 'rake/extensiontask'
 require 'rake/testtask'
 
 spec = Gem::Specification.load('qfs.gemspec')
+
 Rake::ExtensionTask.new do |ext|
   ext.name = 'qfs_ext'
   ext.gem_spec = spec
