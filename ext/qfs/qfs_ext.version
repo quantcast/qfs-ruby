@@ -2,6 +2,7 @@
 	global:
 		Init_qfs_ext;
 		rb_*;
-		ruby_*
-	local: *;
+		ruby_*;
+	local:
+		*;
 };
