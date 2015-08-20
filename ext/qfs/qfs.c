@@ -48,7 +48,7 @@ static VALUE qfs_client_release(VALUE self) {
 	TRACE;
 	struct qfs_client *qfs;
 	Data_Get_Struct(self, struct qfs_client, qfs);
-	if (!qfs->qfs) {
+	if (qfs->qfs) {
 		qfs_release(qfs->qfs);
 	}
 	qfs->qfs = NULL;
