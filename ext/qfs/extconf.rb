@@ -13,6 +13,8 @@ LIB_DIRS = [
 
 dir_config 'qfs', INCLUDE_DIRS, LIB_DIRS
 
+$CFLAGS << ' --std=c99 '
+
 with_config('qfs-local-libs', '').split(':').each do |lib|
 	$LOCAL_LIBS << " #{lib} "
 end
