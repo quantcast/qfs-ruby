@@ -79,7 +79,7 @@ static VALUE qfs_client_open(int argc, VALUE *argv, VALUE self) {
 		Check_Type(mode, T_FIXNUM);
 		imode = (uint16_t)FIX2INT(mode);
 	}
-	if ((params = Qnil)) {
+	if (params == Qnil) {
 		sparams = NULL;
 	} else {
 		Check_Type(params, T_STRING);
