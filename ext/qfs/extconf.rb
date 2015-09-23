@@ -27,4 +27,6 @@ abort 'libqfsc is required' unless find_library 'qfsc', 'qfs_open'
 
 $CFLAGS << ' -std=c99 -Wall -Wextra '
 
+$warnflags.gsub!('-Wdeclaration-after-statement', '') if $warnflags
+
 create_makefile 'qfs_ext'
