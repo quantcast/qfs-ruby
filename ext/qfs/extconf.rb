@@ -4,15 +4,16 @@ require 'rbconfig'
 INCLUDE_DIRS = [
 	RbConfig::CONFIG['includedir'],
 	'/usr/include',
+	'/usr/local/include',
 ]
 
 LIB_DIRS = [
 	RbConfig::CONFIG['libdir'],
 	'/usr/lib',
+	'/usr/local/lib',
 ]
 
 dir_config 'qfs', INCLUDE_DIRS, LIB_DIRS
-
 
 with_config('qfs-local-libs', '').split(':').each do |lib|
 	$LOCAL_LIBS << " #{lib} "
