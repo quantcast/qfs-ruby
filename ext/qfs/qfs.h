@@ -1,6 +1,7 @@
 #ifndef RUBY_QFS_H
 #define RUBY_QFS_H
 
+#include <sys/types.h>
 #include <sys/time.h>
 #include <kfs/c/qfs.h>
 #include <ruby.h>
