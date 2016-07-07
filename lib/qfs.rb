@@ -33,7 +33,7 @@ module Qfs
     # @yield [File] a Qfs::File
     def open(path, mode_str, options = {})
       flags = mode_to_flags(mode_str)
-      fail "#{mode_str} is not a valid mode string" if flags.nil?
+      raise Qfs::Error, "#{mode_str} is not a valid mode string" if flags.nil?
 
       mode ||= options[:mode]
       params ||= options[:params]
@@ -69,12 +69,12 @@ module Qfs
       end
     end
 
-    alias_method :exists?, :exists
-    alias_method :exist?, :exists?
+    alias exists? exists
+    alias exist? exists?
 
-    alias_method :file?, :isfile
+    alias file? isfile
 
-    alias_method :directory?, :isdirectory
+    alias directory? isdirectory
 
     # Remove a regular file.  Pass 'true' to stop exceptions from
     # being thrown if the file doesn't exist.
@@ -96,7 +96,7 @@ module Qfs
     # @param [Int] mode the permissions to set on the new directory
     #
     # @return [Bool] if the directory was created
-    def mkdir(path, mode = 0600)
+    def mkdir(path, mode = 0o600)
       super(path, mode)
     end
 
@@ -106,7 +106,7 @@ module Qfs
     # @param [Int] mode the permissions to set on the new directory
     #
     # @return [Bool] if the directory was created
-    def mkdir_p(path, mode = 0600)
+    def mkdir_p(path, mode = 0o600)
       super(path, mode)
     end
 
@@ -292,6 +292,8 @@ module Qfs
     end
   end
 
+  ##
+  # A File on QFS.
   class File
     # Read from a file.  Don't specify a length to read the entire file.
     #
