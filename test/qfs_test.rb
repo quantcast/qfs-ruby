@@ -1,5 +1,5 @@
-require 'minitest/autorun'
 require 'test_helper'
+require 'minitest/autorun'
 require 'qfs'
 
 class TestQfs < Minitest::Test
@@ -298,6 +298,20 @@ class TestQfs < Minitest::Test
     assert_equal(@file, @client.cwd)
 
     @client.cd('../')
+    assert_equal(BASE_TEST_PATH, @client.cwd)
+  end
+
+  def test_client_cd_fail
+    assert_raises(Qfs::Error) { @client.cd('/fake/directory') }
+  end
+
+  def test_client_setwd
+    @client.mkdir(@file)
+    @client.setwd(@file)
+
+    assert_equal(@file, @client.cwd)
+
+    @client.setwd('../')
     assert_equal(BASE_TEST_PATH, @client.cwd)
   end
 end

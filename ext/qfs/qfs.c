@@ -281,7 +281,7 @@ static VALUE qfs_client_cd_base(VALUE self, VALUE path,
 	struct qfs_client *client;
 	Data_Get_Struct(self, struct qfs_client, client);
 	char *p = StringValueCStr(path);
-	int res = qfs_cd(client->qfs, p);
+	int res = cd_func(client->qfs, p);
 	QFS_CHECK_ERR(res);
 	return Qnil;
 }
