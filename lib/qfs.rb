@@ -244,6 +244,12 @@ module Qfs
       super(path)
     end
 
+    # Set the current working directory
+    #
+    # @param [String] path The directory to change to
+    def setwd(path)
+    end
+
     # Return the current working directory
     #
     # @param [Int] len The length of the buffer that should be allocated

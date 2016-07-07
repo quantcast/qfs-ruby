@@ -7,9 +7,7 @@
 
 VALUE cQfsFile;
 
-/* qfs_file
- * This is a handle to a fd that can perform IO. */
-
+/* This is a handle to a fd that can perform IO. */
 static VALUE qfs_file_read(VALUE self, VALUE len) {
 	struct qfs_file *file;
 	struct qfs_client *client;
@@ -34,6 +32,7 @@ static VALUE qfs_file_tell(VALUE self) {
 	return INT2FIX(offset);
 }
 
+/* Returns a Qfs::Attr object for the file. */
 static VALUE qfs_file_stat(VALUE self) {
 	struct qfs_file *file;
 	struct qfs_client *client;
