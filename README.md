@@ -1,6 +1,6 @@
 # ruby-qfs
 
-Ruby bindings for QFS.
+Ruby bindings for [QFS](https://github.com/quantcast/qfs).
 
 ## Installation
 
