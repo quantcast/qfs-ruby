@@ -6,8 +6,8 @@ require 'qfs/version'
 Gem::Specification.new do |spec|
   spec.name          = 'qfs'
   spec.version       = Qfs::VERSION
-  spec.authors       = ['Eric Culp']
-  spec.email         = ['eculp@quantcast.com']
+  spec.authors       = ['Eric Culp', 'Noah Goldman']
+  spec.email         = ['ngoldman@quantcast.com']
   spec.summary       = 'Bindings for QFS'
   spec.description   = 'Client bindings for Quantcast File System, a '\
     'distributed filesystem.'
