@@ -24,7 +24,7 @@ if with_config('version-script', '0') == '1'
 end
 
 abort '"kfs/c/qfs.h" is required' unless find_header 'kfs/c/qfs.h'
-#abort 'libqfsc is required' unless find_library 'qfsc', 'qfs_open'
+abort 'libqfsc is required' unless find_library 'qfsc', 'qfs_open'
 
 $CFLAGS << ' -std=c99 -Wall -Wextra '
 
