@@ -248,6 +248,7 @@ module Qfs
     #
     # @param [String] path The directory to change to
     def setwd(path)
+      super(path)
     end
 
     # Return the current working directory
