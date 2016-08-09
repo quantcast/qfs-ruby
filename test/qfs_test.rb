@@ -314,4 +314,16 @@ class TestQfs < Minitest::Test
     @client.setwd('../')
     assert_equal(BASE_TEST_PATH, @client.cwd)
   end
+
+  # There is a known bug where you cannot create directories and set their
+  # permissions to 777.  It appears to be a limitation of the QFS C API
+  def test_mkdir_permissions
+    [0755, 0755, 0600].each do |mode|
+      @client.mkdir_p(@file, mode)
+      Qfs::Client.with_client(TEST_HOST, TEST_PORT) do |c|
+        assert_equal(mode, c.stat(@file).mode)
+      end
+      @client.rmdir(@file)
+    end
+  end
 end
