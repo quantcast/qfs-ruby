@@ -18,6 +18,10 @@ Or install it yourself as:
 
     $ gem install qfs
 
+## Usage
+
+The entrypoint to QFS with these bindings is the `Qfs::Client` object.  You can view the entire API in the documentation (TODO update this when open sourced) and see examples in "test/qfs_test.rb".
+
 ## Testing
 
 You can run the tests on an existing instance of QFS.  By default, an local instance running on port 10000 is assumed, but you can specify a different location using environment variables.
@@ -32,3 +36,9 @@ By default, a stock QFS instance will likely have restricted permissions.  You m
 * `QFS_TEST_PATH`: The directory in QFS to create and do all test-related operations in.
 * `QFS_TEST_HOST`: The host running QFS.
 * `QFS_TEST_PORT`: The port that QFS is running on.
+
+You can also enable debugging output by setting the environment variable `RUBY_QFS_TRACE`.
+
+```shell
+export RUBY_QFS_TRACE=1
+```

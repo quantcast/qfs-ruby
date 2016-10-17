@@ -9,8 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Eric Culp', 'Noah Goldman']
   spec.email         = ['ngoldman@quantcast.com']
   spec.summary       = 'Bindings for QFS'
-  spec.description   = 'Client bindings for Quantcast File System, a '\
-    'distributed filesystem.'
+  spec.description   = 'Client bindings for Quantcast File System, a distributed filesystem.'
   spec.homepage      = ''
   spec.license       = 'MIT'
 
