@@ -93,7 +93,7 @@ class TestQfs < Minitest::Test
     assert @client.rmdir(@file)
     assert !@client.exists?(@file)
 
-    assert_raises(Qfs::ENOENT) { @client.rmdir(@file) }
+    assert_raises(Errno::ENOENT) { @client.rmdir(@file) }
     assert_equal(0, @client.rmdir(@file, true))
   end
 

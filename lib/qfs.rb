@@ -281,7 +281,7 @@ module Qfs
       return yield unless force
       begin
         return yield
-      rescue Qfs::ENOENT
+      rescue Errno::ENOENT
         return 0
       end
     end

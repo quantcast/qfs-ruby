@@ -9,7 +9,9 @@ VALUE mQfs;
 VALUE eQfsError;
 
 static VALUE cQfsBaseClient;
-static VALUE eQfsENOENTError;
+
+// Ruby Errno::* exceptions
+VALUE rb_eErrnoENOENT;
 
 /* qfs_client */
 
@@ -38,7 +40,7 @@ static VALUE qfs_client_connect(VALUE self, VALUE host, VALUE port) {
 	Data_Get_Struct(self, struct qfs_client, qfs);
 	qfs->qfs = qfs_connect(StringValueCStr(host), FIX2INT(port));
 	if (!qfs->qfs) {
-		rb_raise(eQfsError, "connection failed");
+		rb_raise(eQfsError, "Connection failed");
 	}
 	return Qnil;
 }
@@ -144,8 +146,7 @@ static VALUE qfs_client_remove(VALUE self, VALUE path) {
 	// Check that the file is regular
 	VALUE isfile = qfs_client_isfile(self, path);
 	if (!RTEST(isfile)) {
-		rb_raise(eQfsError, "Can't remove %s. It isnt a regular file",
-			p);
+		rb_raise(eQfsError, "Not a regular file - %s", p);
 	}
 
 	struct qfs_client *client;
@@ -154,8 +155,7 @@ static VALUE qfs_client_remove(VALUE self, VALUE path) {
 
 	// Raise an exception if the file didn't exist
 	if (res == -2) {
-		rb_raise(eQfsENOENTError, "Can't remove %s.  It doesn't exist",
-			p);
+		rb_raise(rb_eErrnoENOENT, "No such file or directory - %s", p);
 	}
 
 	QFS_CHECK_ERR(res);
@@ -169,8 +169,7 @@ static VALUE qfs_client_mkdir_base(VALUE self, VALUE path, VALUE mode,
 
 	// check if the directory already exists
 	if (RTEST(qfs_client_exists(self, path))) {
-		rb_raise(eQfsError, "Can't create directory %s. It already exists",
-				p);
+		rb_raise(eQfsError, "File exists - %s", p);
 	}
 
 	struct qfs_client *client;
@@ -201,8 +200,7 @@ static VALUE qfs_client_rmdir_base(VALUE self, VALUE path,
 
 	// Raise an exception if the file didn't exist
 	if (res == -2) {
-		rb_raise(eQfsENOENTError, "Can't remove %s.  It doesn't exist",
-			p);
+		rb_raise(rb_eErrnoENOENT, "No such file or directory - %s", p);
 	}
 
 	QFS_CHECK_ERR(res);
@@ -343,5 +341,7 @@ void Init_qfs_ext() {
 	init_qfs_ext_attr();
 
 	eQfsError = rb_define_class_under(mQfs, "Error", rb_eStandardError);
-	eQfsENOENTError = rb_define_class_under(mQfs, "ENOENT", rb_eStandardError);
+
+	// Get the errno exceptions
+	rb_eErrnoENOENT = rb_const_get(rb_mErrno, rb_intern("ENOENT"));
 }
