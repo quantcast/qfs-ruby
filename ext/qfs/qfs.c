@@ -5,6 +5,11 @@
 #include "file.h"
 #include "util.h"
 
+// This is the base size of a buffer to contain the working directory
+#define BASE_WD_BUFFER_SIZE 512
+// The maximum size this buffer should ever grow to (10kb)
+#define MAX_WD_BUFFER_SIZE 10000
+
 VALUE mQfs;
 VALUE eQfsError;
 
@@ -12,6 +17,7 @@ static VALUE cQfsBaseClient;
 
 // Ruby Errno::* exceptions
 VALUE rb_eErrnoENOENT;
+VALUE rb_eErrnoENAMETOOLONG;
 
 /* qfs_client */
 
@@ -292,20 +298,28 @@ static VALUE qfs_client_setwd(VALUE self, VALUE path) {
 	return qfs_client_cd_base(self, path, qfs_setwd);
 }
 
-static VALUE qfs_client_getwd(VALUE self, VALUE len) {
-	Check_Type(len, T_FIXNUM);
+static VALUE qfs_client_getwd(VALUE self) {
 	struct qfs_client *client;
 	Data_Get_Struct(self, struct qfs_client, client);
-	size_t n = (size_t)NUM2INT(len);
-	VALUE str = rb_str_buf_new((long)n);
-	int len_read = qfs_getwd(client->qfs, RSTRING_PTR(str), n);
-	QFS_CHECK_ERR(len_read);
-	if (len_read > (int)n) {
-		rb_raise(eQfsError, "Failed to read the entire CWD. "
-				"Path exceeded the inputted max length");
+
+	size_t n = (size_t)BASE_WD_BUFFER_SIZE;
+	while (n < (size_t)MAX_WD_BUFFER_SIZE) {
+		VALUE str = rb_str_buf_new((long)n);
+		int len_read = qfs_getwd(client->qfs, RSTRING_PTR(str), n);
+		QFS_CHECK_ERR(len_read);
+		// Return if the entire WD was read into the buffer
+		if (len_read < (int)n) {
+			rb_str_set_len(str, len_read);
+			return str;
+		}
+
+		n = n * 2; // Grow the buffer
 	}
-	rb_str_set_len(str, len_read);
-	return str;
+
+	// The path was too long, raise an exception.  This is just a sanity
+	// check, in practice there is no reason that a path should be greater
+	// than 10kb in size.
+	rb_raise(rb_eErrnoENAMETOOLONG, "Working directory path too long");
 }
 
 void Init_qfs_ext() {
@@ -332,7 +346,7 @@ void Init_qfs_ext() {
 	rb_define_method(cQfsBaseClient, "rename", qfs_client_rename, 2);
 	rb_define_method(cQfsBaseClient, "cd", qfs_client_cd, 1);
 	rb_define_method(cQfsBaseClient, "setwd", qfs_client_setwd, 1);
-	rb_define_method(cQfsBaseClient, "getwd", qfs_client_getwd, 1);
+	rb_define_protected_method(cQfsBaseClient, "cwd", qfs_client_getwd, 0);
 	rb_define_private_method(cQfsBaseClient, "chmod_r", qfs_client_chmod_r, 2);
 	rb_define_private_method(cQfsBaseClient, "set_attribute_revalidate_time",
 			qfs_set_attribute_revalidate_time, 1);
@@ -344,4 +358,5 @@ void Init_qfs_ext() {
 
 	// Get the errno exceptions
 	rb_eErrnoENOENT = rb_const_get(rb_mErrno, rb_intern("ENOENT"));
+	rb_eErrnoENAMETOOLONG = rb_const_get(rb_mErrno, rb_intern("ENAMETOOLONG"));
 }

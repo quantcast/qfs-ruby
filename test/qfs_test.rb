@@ -326,4 +326,24 @@ class TestQfs < Minitest::Test
       @client.rmdir(@file)
     end
   end
+
+  def test_client_cwd
+    test_cwd = lambda do |path|
+      @client.mkdir_p(path, 0777)
+      @client.cd(path)
+      assert_equal(path, @client.cwd)
+    end
+
+    test_cwd.call(@file)
+    # This should still work for a very long path (>5kb).  Since qfs has a max
+    # filename length of 255 characters, multiple directories must be created
+    files = ['a' * 255] * 10
+    subdir = files.reduce(@file) { |sum, x| File.join(sum, x) }
+    test_cwd.call(subdir)
+
+    # A ridiculously long path (>10kb) should fail
+    files = files * 4
+    subdir = files.reduce(@file) { |sum, x| File.join(sum, x) }
+    assert_raises(Errno::ENAMETOOLONG) { test_cwd.call(subdir) }
+  end
 end

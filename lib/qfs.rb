@@ -258,8 +258,8 @@ module Qfs
     #                  is too small.
     #
     # @return [String] The current working directory
-    def cwd(len = 4096)
-      getwd(len)
+    def cwd
+      super
     end
 
     private
