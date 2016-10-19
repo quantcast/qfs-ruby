@@ -270,12 +270,12 @@ class TestQfs < Minitest::Test
     assert_attr = proc do |mode, str|
       @client.write(@file, '')
       @client.chmod(@file, mode)
-      assert_equal(str, stat(@file).to_s)
+      assert_includes(stat(@file).to_s, str)
     end
 
-    assert_attr.call(0777, "-rwxrwxrwx #{File.basename(@file)}")
-    assert_attr.call(0644, "-rw-r--r-- #{File.basename(@file)}")
-    assert_attr.call(0473, "-r--rwx-wx #{File.basename(@file)}")
+    assert_attr.call(0777, '-rwxrwxrwx')
+    assert_attr.call(0644, '-rw-r--r--')
+    assert_attr.call(0473, '-r--rwx-wx')
   end
 
   def test_client_move

@@ -338,8 +338,17 @@ module Qfs
   # @attr_reader [Int] min_stier
   # @attr_reader [Int] max_stier
   class Attr
+    # Attempt to mimic the format of the QFS "ls" command
     def to_s
-      "#{directory? ? 'd' : '-'}#{mode_to_s} #{filename}"
+      [
+        "#{directory? ? 'd' : '-'}#{mode_to_s}",
+        '-',
+        uid,
+        gid,
+        size,
+        mtime.strftime('%Y-%m-%d %H:%M'),
+        filename,
+      ].join(' ')
     end
 
     private
