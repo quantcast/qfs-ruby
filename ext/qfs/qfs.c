@@ -6,9 +6,14 @@
 #include "util.h"
 
 // This is the base size of a buffer to contain the working directory
+#ifndef BASE_WD_BUFFER_SIZE
 #define BASE_WD_BUFFER_SIZE 512
+#endif
+
 // The maximum size this buffer should ever grow to (10kb)
-#define MAX_WD_BUFFER_SIZE 10000
+#ifndef MAX_WD_BUFFER_SIZE
+#define MAX_WD_BUFFER_SIZE 4096
+#endif
 
 VALUE mQfs;
 VALUE eQfsError;

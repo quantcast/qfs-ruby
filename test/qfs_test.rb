@@ -315,8 +315,6 @@ class TestQfs < Minitest::Test
     assert_equal(BASE_TEST_PATH, @client.cwd)
   end
 
-  # There is a known bug where you cannot create directories and set their
-  # permissions to 777.  It appears to be a limitation of the QFS C API
   def test_mkdir_permissions
     [0755, 0755, 0600].each do |mode|
       @client.mkdir_p(@file, mode)
@@ -337,7 +335,7 @@ class TestQfs < Minitest::Test
     test_cwd.call(@file)
     # This should still work for a very long path (>5kb).  Since qfs has a max
     # filename length of 255 characters, multiple directories must be created
-    files = ['a' * 255] * 10
+    files = ['a' * 255] * 7
     subdir = files.reduce(@file) { |sum, x| File.join(sum, x) }
     test_cwd.call(subdir)
 
@@ -345,5 +343,16 @@ class TestQfs < Minitest::Test
     files = files * 4
     subdir = files.reduce(@file) { |sum, x| File.join(sum, x) }
     assert_raises(Errno::ENAMETOOLONG) { test_cwd.call(subdir) }
+  end
+
+  # It should be possible to change the properties of a file and see stat
+  # return a different result
+  def test_stat_modifications
+    @client.write(@file, '')
+
+    [0755, 0600, 0743].each do |mode|
+      @client.chmod(@file, mode)
+      assert_equal mode, @client.stat(@file).mode
+    end
   end
 end
