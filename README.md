@@ -42,3 +42,15 @@ You can also enable debugging output by setting the environment variable `RUBY_Q
 ```shell
 export RUBY_QFS_TRACE=1
 ```
+
+## Caveats
+
+### `stat` can return state data after modifications
+
+The behavior of the C API results in a `stat` call using stale data if modifications were made to a file since the connection was opened.  This can be avoided by opening and immediately closing the file that is being `stat`'ed.  You can enable this behavior by setting the `refresh` option to true:
+
+```ruby
+client.stat("/path/to/file", refresh: true)
+```
+
+Be aware that this may come with a performance penalty, so it may be better to use this option only when necessary.

@@ -350,9 +350,9 @@ class TestQfs < Minitest::Test
   def test_stat_modifications
     @client.write(@file, '')
 
-    [0745, 0600, 0743].each do |mode|
+    [0745, 0600, 0443].each do |mode|
       @client.chmod(@file, mode)
-      assert_equal mode, @client.stat(@file).mode
+      assert_equal mode, @client.stat(@file, refresh: true).mode
     end
   end
 

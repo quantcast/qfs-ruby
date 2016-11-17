@@ -227,9 +227,15 @@ module Qfs
     # for a file/directory, you need to create a new Client.
     #
     # @param [String] path The path to the file or directory to stat
+    # @param options [Bool] :refresh If this is set, the file will be opened
+    # and reopened to guarantee stat returns updated values
     #
     # @return [Attr] An attr object
-    def stat(path)
+    def stat(path, options = {})
+      # close the file and repoen it guarantee that the newest data is present
+      # opening in a block will guarantee it is closed
+      open(path, 'w') { } if options[:refresh]
+
       super(path)
     end
 
