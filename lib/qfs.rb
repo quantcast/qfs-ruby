@@ -12,7 +12,6 @@ module Qfs
   O_RDONLY = Fcntl::O_RDONLY
   O_WRONLY = Fcntl::O_WRONLY
   O_TRUNC = Fcntl::O_TRUNC
-  O_APPEND = Fcntl::O_APPEND
 
   # A higher-level Client to interact with QFS.  This attempts to use
   # a similar interface to ruby's native IO functionality.
@@ -23,6 +22,7 @@ module Qfs
     # Modes
     #   * 'r': Read only
     #   * 'w': Write only, overwrite or create new file
+    #   * 'a': Append to the file
     #
     # @param [String] path the path to the file
     # @param [Int] mode_str One of the mode types above
@@ -38,6 +38,10 @@ module Qfs
       mode ||= options[:mode]
       params ||= options[:params]
       f = super(path, flags, mode, params)
+
+      # If the file was opened in append mode, seek to the end to simulate
+      # O_APPEND behavior
+      f.seek(0, IO::SEEK_END) if mode_str == 'a'
 
       return f unless block_given?
 
@@ -289,7 +293,8 @@ module Qfs
     # Maps mode strings to oflags
     MODE_STR_TO_FLAGS = {
       'r' => Qfs::O_RDONLY,
-      'w' => Qfs::O_WRONLY | Qfs::O_TRUNC | Qfs::O_CREAT
+      'w' => Qfs::O_WRONLY | Qfs::O_TRUNC | Qfs::O_CREAT,
+      'a' => Qfs::O_WRONLY,
     }
 
     ##

@@ -376,4 +376,18 @@ class TestQfs < Minitest::Test
       assert_equal data.length, f.tell
     end
   end
+
+  def test_open_append
+    data = random_data
+    @client.write(@file, data)
+
+    data2 = random_data
+    @client.open(@file, 'a') do |f|
+      f.write(data2)
+    end
+
+    res = @client.read(@file)
+
+    assert_equal(data + data2, @client.read(@file))
+  end
 end
