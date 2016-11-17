@@ -85,6 +85,20 @@ static VALUE qfs_file_chmod(VALUE self, VALUE mode) {
 	return RES2BOOL(res);
 }
 
+static VALUE qfs_file_seek(VALUE self, VALUE offset, VALUE whence) {
+	struct qfs_file *file;
+	struct qfs_client *client;
+	Check_Type(offset, T_FIXNUM);
+	Check_Type(whence, T_FIXNUM);
+	off_t toffset = (off_t)FIX2INT(offset);
+	int iwhence = FIX2INT(whence);
+	Data_Get_Struct(self, struct qfs_file, file);
+	Data_Get_Struct(file->client, struct qfs_client, client);
+	off_t res = qfs_seek(client->qfs, file->fd, toffset, iwhence);
+	QFS_CHECK_ERR(res);
+	return INT2FIX((int)res);
+}
+
 void qfs_file_deallocate(void *filevp) {
 	TRACE;
 	/* the client might be deallocated already, so don't try to close ourselves */
@@ -115,4 +129,5 @@ void init_qfs_ext_file() {
 	rb_define_method(cQfsFile, "write", qfs_file_write, 1);
 	rb_define_method(cQfsFile, "close", qfs_file_close, 0);
 	rb_define_method(cQfsFile, "chmod", qfs_file_chmod, 1);
+	rb_define_private_method(cQfsFile, "seek_internal", qfs_file_seek, 2);
 }

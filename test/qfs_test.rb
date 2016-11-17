@@ -350,9 +350,30 @@ class TestQfs < Minitest::Test
   def test_stat_modifications
     @client.write(@file, '')
 
-    [0755, 0600, 0743].each do |mode|
+    [0745, 0600, 0743].each do |mode|
       @client.chmod(@file, mode)
       assert_equal mode, @client.stat(@file).mode
+    end
+  end
+
+  def test_seek
+    data = random_data
+    @client.write(@file, data)
+
+    @client.open(@file, 'r') do |f|
+      assert_equal 0, f.tell
+
+      # now seek into the file
+      f.seek(1, IO::SEEK_SET)
+      assert_equal 1, f.tell
+
+      # Seek a little farther
+      f.seek(5)
+      assert_equal 6, f.tell
+
+      # Seek to the end
+      f.seek(0, IO::SEEK_END)
+      assert_equal data.length, f.tell
     end
   end
 end

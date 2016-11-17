@@ -312,6 +312,18 @@ module Qfs
       len ||= stat.size
       read_len(len)
     end
+
+    # Seek to the specified position in the file.  The default 'whence' value
+    # is SEEK_CUR, so the offset will be applied to the current file position.
+    #
+    # @param [Int] offset The offset to seek to
+    # @param [Int] whence One of the following constants: IO::SEEK_CUR,
+    # IO::SEEK_END, IO::SEEK_SET.  Defaults to IO::SEEK_CUR
+    #
+    # @return [Int] The current file position
+    def seek(offset, whence=IO::SEEK_CUR)
+      seek_internal(offset, whence)
+    end
   end
 
   # A container class for the properties of a file or directory.
