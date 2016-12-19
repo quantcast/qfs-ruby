@@ -20,7 +20,7 @@ Or install it yourself as:
 
 ## Usage
 
-The entrypoint to QFS with these bindings is the `Qfs::Client` object.  You can view the entire API in the documentation (TODO update this when open sourced) and see examples in "test/qfs_test.rb".
+The entrypoint to QFS with these bindings is the `Qfs::Client` object.  You can view the entire API in the [documentation](http://www.rubydoc.info/github/quantcast/qfs-ruby) and see examples in "test/qfs_test.rb".
 
 ## Testing
 
